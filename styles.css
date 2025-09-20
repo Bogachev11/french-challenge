@@ -1,23 +1,63 @@
-/* Кастомные стили для графиков Recharts */
-.recharts-wrapper {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+/* Scatter Plot Dashboard Design System */
+
+/* Основные стили */
+* {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* Корпоративные стили для графиков */
+.recharts-wrapper {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Оси и сетка */
 .recharts-cartesian-axis-tick-value {
-    font-size: 10px;
-    fill: #6b7280;
+    font-size: 0.75rem;
+    fill: #000000;
+    font-weight: 400;
+}
+
+.recharts-cartesian-axis-tick-line {
+    stroke: #000000;
+    stroke-width: 1;
+}
+
+.recharts-cartesian-axis-line {
+    stroke: #000000;
+    stroke-width: 1;
+}
+
+/* Скрыть линию оси Y для всех графиков */
+.recharts-cartesian-axis-y .recharts-cartesian-axis-line {
+    display: none !important;
+}
+
+/* Дополнительные селекторы для скрытия линий оси Y */
+.recharts-cartesian-axis-y line {
+    display: none !important;
+}
+
+.recharts-cartesian-axis-y .recharts-cartesian-axis-line {
+    stroke: transparent !important;
+    display: none !important;
+}
+
+/* Скрыть все линии оси Y */
+.recharts-cartesian-axis-y line[stroke="#000000"] {
+    display: none !important;
 }
 
 .recharts-cartesian-grid-horizontal line {
-    stroke: #e5e7eb;
+    stroke: #f9fafb;
     stroke-width: 1;
 }
 
 .recharts-cartesian-grid-vertical line {
-    stroke: #e5e7eb;
+    stroke: #f9fafb;
     stroke-width: 1;
 }
 
+/* Линии графиков */
 .recharts-line {
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -25,4 +65,140 @@
 
 .recharts-bar {
     stroke-width: 0;
+}
+
+/* Корпоративные цвета для данных */
+.recharts-line[stroke="#10b981"] {
+    stroke: #4caf50; /* data_categories.positive */
+}
+
+.recharts-line[stroke="#ec4899"] {
+    stroke: #e91e63; /* data_categories.negative */
+}
+
+.recharts-bar[fill="#3b82f6"] {
+    fill: #03a9f4; /* data_categories.neutral */
+}
+
+.recharts-bar[fill="#f59e0b"] {
+    fill: #673ab7; /* data_categories.suspended */
+}
+
+/* Стили для точек данных */
+.recharts-dot {
+    stroke-width: 0;
+}
+
+/* Корпоративные компоненты */
+.chart-container {
+    background: #ffffff;
+    border: 0;
+}
+
+.chart-header {
+    margin-bottom: 1.5rem;
+}
+
+.chart-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #000000;
+    margin-bottom: 0.25rem;
+}
+
+.chart-subtitle {
+    font-size: 0.875rem;
+    color: #4b5563;
+    font-weight: 400;
+    margin-bottom: 1.5rem;
+    line-height: 1.625;
+}
+
+.axis-label {
+    font-size: 0.75rem;
+    color: #4b5563;
+    font-weight: 400;
+}
+
+.sector-label {
+    font-size: 0.875rem;
+    color: #000000;
+    font-weight: 500;
+}
+
+.annotation {
+    font-size: 0.75rem;
+    color: #000000;
+}
+
+.legend {
+    font-size: 0.75rem;
+    color: #000000;
+}
+
+/* Легенда */
+.legend-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.legend-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+}
+
+.legend-label {
+    font-size: 0.75rem;
+    color: #000000;
+}
+
+/* Адаптивность */
+@media (max-width: 640px) {
+    .chart-title {
+        font-size: 1.25rem;
+    }
+    
+    .chart-subtitle {
+        font-size: 0.75rem;
+    }
+    
+    .recharts-cartesian-axis-tick-value {
+        font-size: 0.625rem;
+    }
+}
+
+/* Дополнительные корпоративные стили */
+.corporate-chart {
+    background: #ffffff;
+    border: 0;
+    padding: 2rem;
+}
+
+.data-point-small {
+    r: 2;
+}
+
+.data-point-medium {
+    r: 3;
+}
+
+.data-point-large {
+    r: 4;
+}
+
+.cluster-center {
+    opacity: 0.6;
+}
+
+.outlier {
+    opacity: 1;
 }

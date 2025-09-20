@@ -105,12 +105,12 @@ const FrenchChallengeDashboard = () => {
 
   return React.createElement('div', { className: "max-w-md mx-auto bg-white min-h-screen" },
     // Заголовок
-    React.createElement('div', { className: "bg-blue-600 text-white p-4" },
-      React.createElement('h1', { className: "text-xl font-bold" }, "French Course A2→B1"),
-      React.createElement('p', { className: "text-blue-100 text-sm" }, "90 days • 40 lessons"),
-      React.createElement('div', { className: "flex items-center gap-2 mt-2" },
-        React.createElement('div', { className: "w-2 h-2 bg-green-400 rounded-full animate-pulse" }),
-        React.createElement('span', { className: "text-xs text-green-200" }, "updated today")
+    React.createElement('div', { className: "bg-data-categories-neutral text-black px-4 pt-4 pb-0 relative mb-0" },
+      React.createElement('h1', { className: "text-2xl font-bold text-black" }, "French Course A2→B1"),
+      React.createElement('p', { className: "text-black text-sm opacity-70" }, "90 days • 40 lessons"),
+      React.createElement('div', { className: "absolute top-5 right-4 flex items-center gap-2" },
+        React.createElement('div', { className: "w-2 h-2 bg-black rounded-full animate-pulse" }),
+        React.createElement('span', { className: "text-xs text-black opacity-70" }, "updated today")
       )
     ),
 
@@ -155,7 +155,7 @@ const FrenchChallengeDashboard = () => {
             React.createElement(Line, { 
               type: "step", 
               dataKey: "lessons", 
-              stroke: "#10b981", 
+              stroke: "#4caf50", 
               strokeWidth: 2,
               dot: false,
               connectNulls: false
@@ -163,7 +163,7 @@ const FrenchChallengeDashboard = () => {
             React.createElement(Line, { 
               type: "monotone", 
               dataKey: "forecast", 
-              stroke: "#10b981", 
+              stroke: "#4caf50", 
               strokeWidth: 2,
               strokeDasharray: "5 5",
               dot: false,
@@ -192,8 +192,8 @@ const FrenchChallengeDashboard = () => {
               domain: [0, 80],
               fontSize: 10
             }),
-            React.createElement(Bar, { dataKey: "videoTime", stackId: "time", fill: "#3b82f6" }),
-            React.createElement(Bar, { dataKey: "homeworkTime", stackId: "time", fill: "#f59e0b" })
+            React.createElement(Bar, { dataKey: "videoTime", stackId: "time", fill: "#03a9f4" }),
+            React.createElement(Bar, { dataKey: "homeworkTime", stackId: "time", fill: "#673ab7" })
           )
         )
       )
@@ -203,7 +203,7 @@ const FrenchChallengeDashboard = () => {
     React.createElement('div', { className: "px-4 mb-1" },
       React.createElement('h3', { className: "text-sm font-medium text-gray-700" }, "Emotional State"),
       React.createElement('div', { className: "text-xs text-gray-500 mb-1" }, "1-5 scale"),
-      React.createElement('div', { className: "h-20 relative" },
+      React.createElement('div', { className: "h-24 relative" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(LineChart, { data: moodData },
             React.createElement(XAxis, { 
@@ -222,13 +222,13 @@ const FrenchChallengeDashboard = () => {
               dataKey: "mood", 
               stroke: "transparent",
               strokeWidth: 0,
-              dot: { fill: "#ec4899", fillOpacity: 0.5, r: 3 },
+              dot: { fill: "#e91e63", fillOpacity: 0.5, r: 3 },
               connectNulls: false
             }),
             React.createElement(Line, { 
               type: "monotone", 
               dataKey: "movingAvg", 
-              stroke: "#ec4899", 
+              stroke: "#e91e63", 
               strokeWidth: 4,
               dot: false,
               connectNulls: false
@@ -240,7 +240,7 @@ const FrenchChallengeDashboard = () => {
           style: { 
             left: labelXPosition, 
             top: labelYPosition, 
-            color: '#ec4899',
+            color: '#e91e63',
             transform: 'translateY(-50%)'
           }
         }, "moving average")
@@ -253,6 +253,28 @@ const FrenchChallengeDashboard = () => {
 document.addEventListener('DOMContentLoaded', function() {
   if (typeof React !== 'undefined' && typeof Recharts !== 'undefined') {
     ReactDOM.render(React.createElement(FrenchChallengeDashboard), document.getElementById('root'));
+    
+    // Принудительно скрыть линии оси Y после рендеринга
+    setTimeout(() => {
+      // Скрыть все линии оси Y
+      const yAxisLines = document.querySelectorAll('.recharts-cartesian-axis-y line');
+      yAxisLines.forEach(line => {
+        line.style.display = 'none';
+        line.style.visibility = 'hidden';
+        line.style.opacity = '0';
+      });
+      
+      // Дополнительно скрыть через CSS классы
+      const style = document.createElement('style');
+      style.textContent = `
+        .recharts-cartesian-axis-y line {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }, 100);
   } else {
     document.getElementById('root').innerHTML = '<div style="padding: 20px; text-align: center; color: red;">Ошибка загрузки библиотек. Проверьте подключение к интернету.</div>';
   }

@@ -129,9 +129,24 @@ const FrenchChallengeDashboard = () => {
 
     // Метрики
     React.createElement('div', { className: "grid grid-cols-4 gap-2 p-4" },
-      React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
+      React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg relative" },
         React.createElement('div', { className: "text-lg font-bold text-gray-800" }, `${completedLessons}/40`),
-        React.createElement('div', { className: "text-xs text-gray-600" }, "lessons")
+        React.createElement('div', { className: "text-xs text-gray-600" }, "lessons"),
+        React.createElement('div', { 
+          className: "absolute top-2 right-2 w-1 bg-gray-200 rounded-full overflow-hidden",
+          style: { height: 'calc(100% - 16px)' }
+        },
+          React.createElement('div', { 
+            style: { 
+              height: `${(completedLessons / 40) * 100}%`,
+              width: '100%',
+              backgroundColor: '#4caf50',
+              transition: 'height 0.3s ease',
+              position: 'absolute',
+              bottom: 0
+            } 
+          })
+        )
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
         React.createElement('div', { className: "text-lg font-bold text-gray-800" }, `${avgTime}m`),

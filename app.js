@@ -6,21 +6,21 @@ if (typeof Recharts === 'undefined') {
   console.error('Recharts не загружен');
 }
 
-const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar } = Recharts;
+const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, ComposedChart } = Recharts;
 
 const FrenchChallengeDashboard = () => {
   // Данные из Google Sheets (CSV формат)
   const testData = [
     { day: 1, completedLessons: "1", attemptedLessons: "", videoTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
     { day: 2, completedLessons: "2", attemptedLessons: "3", videoTime: 20, homeworkTime: 12, otherTime: 0, mood: 4 },
-    { day: 3, completedLessons: "3,4", attemptedLessons: "", videoTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
+    { day: 3, completedLessons: "3", attemptedLessons: "", videoTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
     { day: 4, completedLessons: "", attemptedLessons: "5,6", videoTime: 40, homeworkTime: 0, otherTime: 0, mood: 2 },
-    { day: 5, completedLessons: "5", attemptedLessons: "", videoTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
-    { day: 6, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 30, mood: 2 }, // пропущенный день
+    { day: 5, completedLessons: "4,5", attemptedLessons: "", videoTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
+    { day: 6, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 }, // пропущенный день
     { day: 7, completedLessons: "6", attemptedLessons: "", videoTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
     { day: 8, completedLessons: "7", attemptedLessons: "", videoTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
-    { day: 9, completedLessons: "8", attemptedLessons: "", videoTime: 12, homeworkTime: 7, otherTime: 0, mood: 4 },
-    { day: 10, completedLessons: "9,10", attemptedLessons: "", videoTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
+    { day: 9, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
+    { day: 10, completedLessons: "8,9,10", attemptedLessons: "", videoTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
   ];
 
   // Функция для парсинга строки уроков из Google Sheets
@@ -76,22 +76,24 @@ const FrenchChallengeDashboard = () => {
     });
   }
   
-  // Данные для графика настроения с скользящей средней
+  // Данные для графика настроения с экспоненциальным сглаживанием
   const moodData = [];
   let lastMovingAvgValue = null;
+  let smoothedValue = null;
   
   for (let day = 1; day <= 90; day++) {
     const existingDay = testData.find(d => d.day === day);
     let movingAvg = null;
     
     if (existingDay) {
-      // Рассчитываем скользящую среднюю по 3 точкам
-      const prevDay = testData.find(d => d.day === day - 1);
-      const nextDay = testData.find(d => d.day === day + 1);
-      const values = [existingDay.mood];
-      if (prevDay) values.push(prevDay.mood);
-      if (nextDay) values.push(nextDay.mood);
-      movingAvg = values.reduce((sum, val) => sum + val, 0) / values.length;
+      // Экспоненциальное сглаживание (более гладкая линия)
+      const alpha = 0.3; // коэффициент сглаживания (0.1-0.5)
+      if (smoothedValue === null) {
+        smoothedValue = existingDay.mood;
+      } else {
+        smoothedValue = alpha * existingDay.mood + (1 - alpha) * smoothedValue;
+      }
+      movingAvg = smoothedValue;
       lastMovingAvgValue = movingAvg;
     }
     
@@ -104,9 +106,9 @@ const FrenchChallengeDashboard = () => {
   
   // Позиция для надписи рядом с последней точкой скользящей средней
   const lastDayWithData = currentDay; // день 10
-  const chartWidth = 85; // примерно 85% ширины занимает сам график (без осей)
+  const chartWidth = 80; // примерно 80% ширины занимает сам график (с учетом увеличенного отступа)
   const chartHeight = 70; // примерно 70% высоты занимает сам график (без осей)
-  const labelXPosition = `${15 + (lastDayWithData / 90) * chartWidth + 2}%`; // 15% отступ слева для оси Y + 1% сдвиг вправо
+  const labelXPosition = `${15 + (lastDayWithData / 90) * 80}%`; // 15% отступ слева для оси Y, без дополнительного сдвига
   const labelYPosition = lastMovingAvgValue ? 
     `${(5 - lastMovingAvgValue) / 4 * chartHeight + 1}%` : '50%'; // точно на уровне точки скользящей средней + небольшой сдвиг
   
@@ -138,7 +140,7 @@ const FrenchChallengeDashboard = () => {
     // Заголовок
     React.createElement('div', { className: "bg-data-categories-neutral text-black px-4 pt-4 pb-0 relative mb-0" },
       React.createElement('h1', { className: "text-3xl font-bold text-black" }, "French A2→B1"),
-      React.createElement('p', { className: "text-black text-base opacity-70" }, "90 days • 40 lessons"),
+      React.createElement('p', { className: "text-black text-base opacity-70" }, `90 days • 40 lessons • Day ${currentDay}`),
       React.createElement('div', { className: "absolute top-5 right-4 flex items-center gap-2" },
         React.createElement('div', { className: "w-2 h-2 bg-black rounded-full animate-pulse" }),
         React.createElement('span', { className: "text-sm text-black opacity-70" }, "updated today")
@@ -187,18 +189,28 @@ const FrenchChallengeDashboard = () => {
     React.createElement('div', { className: "px-4 mb-1" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Lessons Progress"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "cumulative lessons completed"),
-      React.createElement('div', { className: "h-40" },
+      React.createElement('div', { className: "h-40 relative" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(LineChart, { data: allData },
+          React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 5, top: 5, bottom: 5 } },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
               domain: [0, 90],
               ticks: [1, 10, 30, 60, 90],
-              tick: { fontSize: 0 }
+              tick: { fontSize: 0 },
+              tickLine: { stroke: '#000000' }
             }),
             React.createElement(YAxis, { 
-              domain: ['dataMin', 'dataMax'],
+              domain: [0, Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5],
+              ticks: (() => {
+                const max = Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5;
+                const ticks = [];
+                for (let i = 0; i <= max; i += 5) {
+                  ticks.push(i);
+                }
+                return ticks;
+              })(),
+              axisLine: false,
               fontSize: 12
             }),
             React.createElement(Line, { 
@@ -211,13 +223,24 @@ const FrenchChallengeDashboard = () => {
             }),
             React.createElement(Bar, { 
               dataKey: "dailyLessons", 
-              fill: "#3b82f6", 
-              fillOpacity: 0.3,
-              stroke: "#3b82f6",
+              fill: "#1d4ed8", 
+              fillOpacity: 0.8,
+              stroke: "#1d4ed8",
               strokeWidth: 1
             })
           )
-        )
+        ),
+        React.createElement('div', { 
+          className: "absolute text-sm font-bold pointer-events-auto", 
+          style: { 
+            left: `${15 + (currentDay / 90) * 80}%`, 
+            top: `${(Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5 - completedLessons) / (Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5) * 70 + 1}%`, 
+            color: '#3b82f6',
+            whiteSpace: 'nowrap',
+            zIndex: 10,
+            transform: 'translateY(-50%)'
+          }
+        }, "cumulative lessons")
       )
     ),
 
@@ -261,16 +284,18 @@ const FrenchChallengeDashboard = () => {
       ),
       React.createElement('div', { className: "h-40" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(BarChart, { data: timeData, barCategoryGap: 0 },
+          React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 5, top: 5, bottom: 5 } },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
               domain: [0, 90],
               ticks: [1, 10, 30, 60, 90],
-              tick: { fontSize: 0 }
+              tick: { fontSize: 0 },
+              tickLine: { stroke: '#000000' }
             }),
             React.createElement(YAxis, { 
               domain: [0, 80],
+              axisLine: false,
               fontSize: 12
             }),
             React.createElement(Bar, { dataKey: "videoTime", stackId: "time", fill: "#03a9f4" }),
@@ -287,7 +312,7 @@ const FrenchChallengeDashboard = () => {
       React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – Absolutely brilliant."),
       React.createElement('div', { className: "h-28 relative" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(LineChart, { data: moodData },
+          React.createElement(LineChart, { data: moodData, margin: { left: 5, right: 5, top: 5, bottom: 5 } },
             React.createElement('defs', null,
               React.createElement('linearGradient', { id: "moodGradient", x1: "0", y1: "0", x2: "0", y2: "1" },
                 React.createElement('stop', { offset: "0%", stopColor: "#3b82f6" }),
@@ -305,6 +330,7 @@ const FrenchChallengeDashboard = () => {
             React.createElement(YAxis, { 
               domain: [1, 5],
               ticks: [1, 5],
+              axisLine: false,
               fontSize: 12
             }),
             React.createElement(Line, { 
@@ -379,21 +405,6 @@ document.addEventListener('DOMContentLoaded', function() {
         text.style.fontSize = '12px';
         text.style.fill = '#000000';
       });
-      
-      // Дополнительно скрыть через CSS классы
-      const style = document.createElement('style');
-      style.textContent = `
-        .recharts-cartesian-axis-y line {
-          display: none !important;
-          visibility: hidden !important;
-          opacity: 0 !important;
-        }
-        .recharts-cartesian-axis-tick-value {
-          font-size: 12px !important;
-          fill: #000000 !important;
-        }
-      `;
-      document.head.appendChild(style);
     }, 100);
   } else {
     document.getElementById('root').innerHTML = '<div style="padding: 20px; text-align: center; color: red;">Ошибка загрузки библиотек. Проверьте подключение к интернету.</div>';

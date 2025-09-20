@@ -103,9 +103,18 @@ const FrenchChallengeDashboard = () => {
   const lastDayWithData = currentDay; // день 10
   const chartWidth = 85; // примерно 85% ширины занимает сам график (без осей)
   const chartHeight = 70; // примерно 70% высоты занимает сам график (без осей)
-  const labelXPosition = `${15 + (lastDayWithData / 90) * chartWidth}%`; // 15% отступ слева для оси Y
+  const labelXPosition = `${15 + (lastDayWithData / 90) * chartWidth + 2}%`; // 15% отступ слева для оси Y + 1% сдвиг вправо
   const labelYPosition = lastMovingAvgValue ? 
-    `${15 + (5 - lastMovingAvgValue) / 4 * chartHeight}%` : '50%'; // 15% отступ сверху для заголовков
+    `${(5 - lastMovingAvgValue) / 4 * chartHeight + 1}%` : '50%'; // точно на уровне точки скользящей средней + небольшой сдвиг
+  
+  // Цвет последней точки скользящей средней (градиент от синего к красному)
+  const getMovingAvgColor = (value) => {
+    if (value <= 1) return '#ef4444'; // красный для низких значений
+    if (value >= 5) return '#3b82f6'; // синий для высоких значений
+    if (value <= 3) return '#8b5cf6'; // фиолетовый для средних значений
+    return '#3b82f6'; // синий для высоких значений
+  };
+  const labelColor = lastMovingAvgValue ? getMovingAvgColor(lastMovingAvgValue) : '#e91e63';
 
   // Подсчет страйка
   let currentStreak = 0;
@@ -281,7 +290,7 @@ const FrenchChallengeDashboard = () => {
     React.createElement('div', { className: "px-4 mb-1" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Emotional State"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – Absolutely brilliant."),
-      React.createElement('div', { className: "h-32 relative" },
+      React.createElement('div', { className: "h-28 relative" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(LineChart, { data: moodData },
             React.createElement('defs', null,
@@ -322,11 +331,13 @@ const FrenchChallengeDashboard = () => {
           )
         ),
         React.createElement('div', { 
-          className: "absolute text-sm pointer-events-none", 
+          className: "absolute text-sm font-bold pointer-events-auto", 
           style: { 
             left: labelXPosition, 
             top: labelYPosition, 
-            color: '#e91e63',
+            color: labelColor,
+            whiteSpace: 'nowrap',
+            zIndex: 10,
             transform: 'translateY(-50%)'
           }
         }, "moving average")

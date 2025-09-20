@@ -120,19 +120,19 @@ const FrenchChallengeDashboard = () => {
   return React.createElement('div', { className: "max-w-md mx-auto bg-white min-h-screen border border-gray-300 px-1" },
     // Заголовок
     React.createElement('div', { className: "bg-data-categories-neutral text-black px-4 pt-4 pb-0 relative mb-0" },
-      React.createElement('h1', { className: "text-2xl font-bold text-black" }, "French Course A2→B1"),
-      React.createElement('p', { className: "text-black text-sm opacity-70" }, "90 days • 40 lessons"),
+      React.createElement('h1', { className: "text-3xl font-bold text-black" }, "French A2→B1"),
+      React.createElement('p', { className: "text-black text-base opacity-70" }, "90 days • 40 lessons"),
       React.createElement('div', { className: "absolute top-5 right-4 flex items-center gap-2" },
         React.createElement('div', { className: "w-2 h-2 bg-black rounded-full animate-pulse" }),
-        React.createElement('span', { className: "text-xs text-black opacity-70" }, "updated today")
+        React.createElement('span', { className: "text-sm text-black opacity-70" }, "updated today")
       )
     ),
 
     // Метрики
     React.createElement('div', { className: "grid grid-cols-4 gap-2 p-4" },
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg relative" },
-        React.createElement('div', { className: "text-lg font-bold text-gray-800" }, `${completedLessons}/40`),
-        React.createElement('div', { className: "text-xs text-gray-600" }, "lessons"),
+        React.createElement('div', { className: "text-xl font-bold text-gray-800" }, `${completedLessons}/40`),
+        React.createElement('div', { className: "text-sm text-gray-600" }, "lessons"),
         React.createElement('div', { 
           className: "absolute top-2 right-2 w-1 bg-gray-200 rounded-full overflow-hidden",
           style: { height: 'calc(100% - 16px)' }
@@ -150,26 +150,26 @@ const FrenchChallengeDashboard = () => {
         )
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
-        React.createElement('div', { className: "text-lg font-bold text-gray-800" }, `${avgTime}m`),
-        React.createElement('div', { className: "text-xs text-gray-600" }, "avg/day")
+        React.createElement('div', { className: "text-xl font-bold text-gray-800" }, `${avgTime}m`),
+        React.createElement('div', { className: "text-sm text-gray-600" }, "avg/day")
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
-        React.createElement('div', { className: "text-lg font-bold text-gray-800" }, `${Math.round(totalTime/60)}h`),
-        React.createElement('div', { className: "text-xs text-gray-600" }, "total")
+        React.createElement('div', { className: "text-xl font-bold text-gray-800" }, `${Math.round(totalTime/60)}h`),
+        React.createElement('div', { className: "text-sm text-gray-600" }, "total")
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
-        React.createElement('div', { className: "text-lg font-bold text-gray-800 flex items-center gap-1" },
+        React.createElement('div', { className: "text-xl font-bold text-gray-800 flex items-center gap-1" },
           currentStreak > 0 && React.createElement('span', { style: { fontSize: '16px' } }, "⚡"),
           React.createElement('span', null, currentStreak > 0 ? currentStreak : "")
         ),
-        React.createElement('div', { className: "text-xs text-gray-600" }, "streak")
+        React.createElement('div', { className: "text-sm text-gray-600" }, "streak")
       )
     ),
 
     // График уроков
     React.createElement('div', { className: "px-4 mb-1" },
-      React.createElement('h3', { className: "text-sm font-medium text-gray-700" }, "Cumulative Lessons Completed"),
-      React.createElement('div', { className: "text-xs text-gray-500 mb-1 flex items-center gap-2" },
+      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Cumulative Lessons Completed"),
+      React.createElement('div', { className: "text-sm text-gray-500 mb-1 flex items-center gap-2" },
         React.createElement('div', { 
           style: { 
             width: '20px', 
@@ -219,8 +219,8 @@ const FrenchChallengeDashboard = () => {
 
     // График времени по дням
     React.createElement('div', { className: "px-4 mb-1" },
-      React.createElement('h3', { className: "text-sm font-medium text-gray-700" }, "Daily Time"),
-      React.createElement('div', { className: "text-xs text-gray-500 mb-1 flex items-center gap-3" },
+      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Daily Time"),
+      React.createElement('div', { className: "text-sm text-gray-500 mb-1 flex items-center gap-3" },
         React.createElement('div', { className: "flex items-center gap-1" },
           React.createElement('div', { 
             style: { 
@@ -255,7 +255,7 @@ const FrenchChallengeDashboard = () => {
           React.createElement('span', null, "Other")
         )
       ),
-      React.createElement('div', { className: "h-24" },
+      React.createElement('div', { className: "h-40" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(BarChart, { data: timeData },
             React.createElement(XAxis, { 
@@ -279,9 +279,9 @@ const FrenchChallengeDashboard = () => {
 
     // График настроения
     React.createElement('div', { className: "px-4 mb-1" },
-      React.createElement('h3', { className: "text-sm font-medium text-gray-700" }, "Emotional State"),
-      React.createElement('div', { className: "text-xs text-gray-500 mb-1" }, "1-5 scale"),
-      React.createElement('div', { className: "h-24 relative" },
+      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Emotional State"),
+      React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – Absolutely brilliant."),
+      React.createElement('div', { className: "h-20 relative" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(LineChart, { data: moodData },
             React.createElement(XAxis, { 
@@ -293,6 +293,7 @@ const FrenchChallengeDashboard = () => {
             }),
             React.createElement(YAxis, { 
               domain: [1, 5],
+              ticks: [1, 5],
               fontSize: 12
             }),
             React.createElement(Line, { 
@@ -314,7 +315,7 @@ const FrenchChallengeDashboard = () => {
           )
         ),
         React.createElement('div', { 
-          className: "absolute text-xs pointer-events-none", 
+          className: "absolute text-sm pointer-events-none", 
           style: { 
             left: labelXPosition, 
             top: labelYPosition, 
@@ -327,7 +328,7 @@ const FrenchChallengeDashboard = () => {
 
     // Подвал
     React.createElement('div', { className: "px-4 py-3 text-left border-t border-gray-200" },
-      React.createElement('div', { className: "text-xs text-gray-500 space-y-1" },
+        React.createElement('div', { className: "text-sm text-gray-500" },
         React.createElement('div', null, "Vibecoded via Claude and Cursor"),
         React.createElement('div', null, "Started at 22 Sept, 2025. Aleksandr Bogachev"),
         React.createElement('div', { className: "flex items-center gap-1" },

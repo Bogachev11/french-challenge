@@ -40,11 +40,24 @@ const FrenchChallengeDashboard = () => {
     } else if (day <= currentDay) {
       allData.push({ day: day, lessons: null, forecast: null });
     } else {
-      allData.push({
-        day: day,
-        lessons: null,
-        forecast: Math.min(40, Math.round(currentLessonsPerDay * day))
-      });
+      // Рассчитываем прогноз
+      const forecastValue = Math.round(currentLessonsPerDay * day);
+      
+      // Если прогноз достиг 40, останавливаем линию
+      if (forecastValue >= 40) {
+        allData.push({
+          day: day,
+          lessons: null,
+          forecast: 40
+        });
+        break; // Прекращаем добавление данных после достижения 40
+      } else {
+        allData.push({
+          day: day,
+          lessons: null,
+          forecast: forecastValue
+        });
+      }
     }
   }
   
@@ -136,8 +149,18 @@ const FrenchChallengeDashboard = () => {
 
     // График уроков
     React.createElement('div', { className: "px-4 mb-1" },
-      React.createElement('h3', { className: "text-sm font-medium text-gray-700" }, "Cumulative Lessons"),
-      React.createElement('div', { className: "text-xs text-gray-500 mb-1" }, "lessons completed"),
+      React.createElement('h3', { className: "text-sm font-medium text-gray-700" }, "Cumulative Lessons Completed"),
+      React.createElement('div', { className: "text-xs text-gray-500 mb-1 flex items-center gap-2" },
+        React.createElement('div', { 
+          style: { 
+            width: '20px', 
+            height: '2px', 
+            background: 'repeating-linear-gradient(to right, #4caf50 0px, #4caf50 3px, transparent 3px, transparent 6px)',
+            opacity: 0.5
+          } 
+        }),
+        React.createElement('span', null, " — automated forecast")
+      ),
       React.createElement('div', { className: "h-40" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(LineChart, { data: allData },
@@ -165,7 +188,8 @@ const FrenchChallengeDashboard = () => {
               dataKey: "forecast", 
               stroke: "#4caf50", 
               strokeWidth: 2,
-              strokeDasharray: "5 5",
+              strokeDasharray: "3 3",
+              strokeOpacity: 0.5,
               dot: false,
               connectNulls: false
             })

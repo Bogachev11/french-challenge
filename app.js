@@ -141,7 +141,7 @@ const FrenchChallengeDashboard = () => {
             style: { 
               height: `${(completedLessons / 40) * 100}%`,
               width: '100%',
-              backgroundColor: '#4caf50',
+              backgroundColor: '#3b82f6',
               transition: 'height 0.3s ease',
               position: 'absolute',
               bottom: 0
@@ -174,7 +174,7 @@ const FrenchChallengeDashboard = () => {
           style: { 
             width: '20px', 
             height: '2px', 
-            background: 'repeating-linear-gradient(to right, #4caf50 0px, #4caf50 3px, transparent 3px, transparent 6px)',
+            background: 'repeating-linear-gradient(to right, #3b82f6 0px, #3b82f6 3px, transparent 3px, transparent 6px)',
             opacity: 0.5
           } 
         }),
@@ -197,16 +197,16 @@ const FrenchChallengeDashboard = () => {
             React.createElement(Line, { 
               type: "step", 
               dataKey: "lessons", 
-              stroke: "#4caf50", 
-              strokeWidth: 2,
+              stroke: "#3b82f6", 
+              strokeWidth: 3,
               dot: false,
               connectNulls: false
             }),
             React.createElement(Line, { 
               type: "monotone", 
               dataKey: "forecast", 
-              stroke: "#4caf50", 
-              strokeWidth: 2,
+              stroke: "#3b82f6", 
+              strokeWidth: 3,
               strokeDasharray: "3 3",
               strokeOpacity: 0.5,
               dot: false,
@@ -257,7 +257,7 @@ const FrenchChallengeDashboard = () => {
       ),
       React.createElement('div', { className: "h-40" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(BarChart, { data: timeData },
+          React.createElement(BarChart, { data: timeData, barCategoryGap: 0 },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
@@ -281,9 +281,16 @@ const FrenchChallengeDashboard = () => {
     React.createElement('div', { className: "px-4 mb-1" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Emotional State"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – Absolutely brilliant."),
-      React.createElement('div', { className: "h-20 relative" },
+      React.createElement('div', { className: "h-32 relative" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(LineChart, { data: moodData },
+            React.createElement('defs', null,
+              React.createElement('linearGradient', { id: "moodGradient", x1: "0", y1: "0", x2: "0", y2: "1" },
+                React.createElement('stop', { offset: "0%", stopColor: "#3b82f6" }),
+                React.createElement('stop', { offset: "50%", stopColor: "#8b5cf6" }),
+                React.createElement('stop', { offset: "100%", stopColor: "#ef4444" })
+              )
+            ),
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
@@ -301,13 +308,13 @@ const FrenchChallengeDashboard = () => {
               dataKey: "mood", 
               stroke: "transparent",
               strokeWidth: 0,
-              dot: { fill: "#e91e63", fillOpacity: 0.5, r: 3 },
+              dot: { fill: "#6b7280", fillOpacity: 0.5, r: 2 },
               connectNulls: false
             }),
             React.createElement(Line, { 
               type: "monotone", 
               dataKey: "movingAvg", 
-              stroke: "#e91e63", 
+              stroke: "url(#moodGradient)", 
               strokeWidth: 4,
               dot: false,
               connectNulls: false
@@ -328,7 +335,7 @@ const FrenchChallengeDashboard = () => {
 
     // Подвал
     React.createElement('div', { className: "px-4 py-3 text-left border-t border-gray-200" },
-        React.createElement('div', { className: "text-sm text-gray-500" },
+        React.createElement('div', { className: "text-xs text-gray-500" },
         React.createElement('div', null, "Vibecoded via Claude and Cursor"),
         React.createElement('div', null, "Started at 22 Sept, 2025. Aleksandr Bogachev"),
         React.createElement('div', { className: "flex items-center gap-1" },

@@ -323,6 +323,23 @@ const FrenchChallengeDashboard = () => {
           }
         }, "moving average")
       )
+    ),
+
+    // Подвал
+    React.createElement('div', { className: "px-4 py-3 text-left border-t border-gray-200" },
+      React.createElement('div', { className: "text-xs text-gray-500 space-y-1" },
+        React.createElement('div', null, "Vibecoded via Claude and Cursor"),
+        React.createElement('div', null, "Started at 22 Sept, 2025. Aleksandr Bogachev"),
+        React.createElement('div', { className: "flex items-center gap-1" },
+          React.createElement('span', { className: "text-gray-500" }, "𝕏"),
+          React.createElement('a', { 
+            href: "https://x.com/bogachev_al", 
+            target: "_blank", 
+            rel: "noopener noreferrer",
+            className: "text-gray-500 hover:text-gray-700 underline"
+          }, "bogachev_al")
+        )
+      )
     )
   );
 };

@@ -9,55 +9,58 @@ if (typeof Recharts === 'undefined') {
 const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar } = Recharts;
 
 const FrenchChallengeDashboard = () => {
-  // Тестовые данные - 10 дней из 90
+  // Данные из Google Sheets (CSV формат)
   const testData = [
-    { day: 1, lessons: 1, videoTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
-    { day: 2, lessons: 2, videoTime: 10, homeworkTime: 12, otherTime: 0, mood: 4 },
-    { day: 3, lessons: 2, videoTime: 15, homeworkTime: 13, otherTime: 30, mood: 3 },
-    { day: 4, lessons: 3, videoTime: 15, homeworkTime: 16, otherTime: 0, mood: 5 },
-    { day: 5, lessons: 4, videoTime: 10, homeworkTime: 13, otherTime: 0, mood: 4 },
-    { day: 6, lessons: 4, videoTime: 0, homeworkTime: 0, otherTime: 30, mood: 2 }, // пропущенный день
-    { day: 7, lessons: 5, videoTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
-    { day: 8, lessons: 5, videoTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
-    { day: 9, lessons: 6, videoTime: 12, homeworkTime: 7, otherTime: 0, mood: 4 },
-    { day: 10, lessons: 7, videoTime: 10, homeworkTime: 17, otherTime: 0,mood: 5 }
+    { day: 1, completedLessons: "1", attemptedLessons: "", videoTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
+    { day: 2, completedLessons: "2", attemptedLessons: "3", videoTime: 20, homeworkTime: 12, otherTime: 0, mood: 4 },
+    { day: 3, completedLessons: "3,4", attemptedLessons: "", videoTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
+    { day: 4, completedLessons: "", attemptedLessons: "5,6", videoTime: 40, homeworkTime: 0, otherTime: 0, mood: 2 },
+    { day: 5, completedLessons: "5", attemptedLessons: "", videoTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
+    { day: 6, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 30, mood: 2 }, // пропущенный день
+    { day: 7, completedLessons: "6", attemptedLessons: "", videoTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
+    { day: 8, completedLessons: "7", attemptedLessons: "", videoTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
+    { day: 9, completedLessons: "8", attemptedLessons: "", videoTime: 12, homeworkTime: 7, otherTime: 0, mood: 4 },
+    { day: 10, completedLessons: "9,10", attemptedLessons: "", videoTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
   ];
 
+  // Функция для парсинга строки уроков из Google Sheets
+  const parseLessons = (lessonsString) => {
+    if (!lessonsString || lessonsString.trim() === '') return [];
+    return lessonsString.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+  };
+
   const currentDay = testData.length;
-  const completedLessons = testData[testData.length - 1]?.lessons || 0;
-  const totalTime = testData.reduce((sum, day) => sum + day.videoTime + day.homeworkTime, 0);
-  const avgTime = Math.round(totalTime / testData.filter(d => (d.videoTime + d.homeworkTime) > 0).length);
+  
+  // Рассчитываем общее количество завершенных уроков
+  const allCompletedLessons = testData.flatMap(day => parseLessons(day.completedLessons));
+  const completedLessons = allCompletedLessons.length;
+  
+  // Рассчитываем общее время (включая otherTime)
+  const totalTime = testData.reduce((sum, day) => sum + day.videoTime + day.homeworkTime + day.otherTime, 0);
+  const avgTime = Math.round(totalTime / testData.filter(d => (d.videoTime + d.homeworkTime + d.otherTime) > 0).length);
   
   // Прогноз уроков
   const currentLessonsPerDay = completedLessons / currentDay;
   const allData = [];
   
-  // Заполняем данные для всех 90 дней
-  for (let day = 1; day <= 90; day++) {
+  // Заполняем данные только до текущего дня с накопленным количеством уроков
+  let cumulativeLessons = 0;
+  for (let day = 1; day <= currentDay; day++) {
     const existingDay = testData.find(d => d.day === day);
     if (existingDay) {
-      allData.push({ day: day, lessons: existingDay.lessons, forecast: null });
-    } else if (day <= currentDay) {
-      allData.push({ day: day, lessons: null, forecast: null });
+      const dayCompletedLessons = parseLessons(existingDay.completedLessons).length;
+      cumulativeLessons += dayCompletedLessons;
+      allData.push({ 
+        day: day, 
+        lessons: cumulativeLessons, 
+        dailyLessons: dayCompletedLessons // количество уроков за день
+      });
     } else {
-      // Рассчитываем прогноз
-      const forecastValue = Math.round(currentLessonsPerDay * day);
-      
-      // Если прогноз достиг 40, останавливаем линию
-      if (forecastValue >= 40) {
-        allData.push({
-          day: day,
-          lessons: null,
-          forecast: 40
-        });
-        break; // Прекращаем добавление данных после достижения 40
-      } else {
-        allData.push({
-          day: day,
-          lessons: null,
-          forecast: forecastValue
-        });
-      }
+      allData.push({ 
+        day: day, 
+        lessons: cumulativeLessons, 
+        dailyLessons: 0 // нет уроков за день
+      });
     }
   }
   
@@ -116,10 +119,15 @@ const FrenchChallengeDashboard = () => {
   };
   const labelColor = lastMovingAvgValue ? getMovingAvgColor(lastMovingAvgValue) : '#e91e63';
 
-  // Подсчет страйка
+  // Подсчет страйка (дни с активностью)
   let currentStreak = 0;
   for (let i = testData.length - 1; i >= 0; i--) {
-    if ((testData[i].videoTime + testData[i].homeworkTime) > 0) {
+    const day = testData[i];
+    const hasActivity = (day.videoTime + day.homeworkTime + day.otherTime) > 0 || 
+                       parseLessons(day.completedLessons).length > 0 || 
+                       parseLessons(day.attemptedLessons).length > 0;
+    
+    if (hasActivity) {
       currentStreak++;
     } else {
       break;
@@ -177,18 +185,8 @@ const FrenchChallengeDashboard = () => {
 
     // График уроков
     React.createElement('div', { className: "px-4 mb-1" },
-      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Cumulative Lessons Completed"),
-      React.createElement('div', { className: "text-sm text-gray-500 mb-1 flex items-center gap-2" },
-        React.createElement('div', { 
-          style: { 
-            width: '20px', 
-            height: '2px', 
-            background: 'repeating-linear-gradient(to right, #3b82f6 0px, #3b82f6 3px, transparent 3px, transparent 6px)',
-            opacity: 0.5
-          } 
-        }),
-        React.createElement('span', null, " — automated forecast")
-      ),
+      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Lessons Progress"),
+      React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "cumulative lessons completed"),
       React.createElement('div', { className: "h-40" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(LineChart, { data: allData },
@@ -200,7 +198,7 @@ const FrenchChallengeDashboard = () => {
               tick: { fontSize: 0 }
             }),
             React.createElement(YAxis, { 
-              domain: [0, 40],
+              domain: ['dataMin', 'dataMax'],
               fontSize: 12
             }),
             React.createElement(Line, { 
@@ -211,15 +209,12 @@ const FrenchChallengeDashboard = () => {
               dot: false,
               connectNulls: false
             }),
-            React.createElement(Line, { 
-              type: "monotone", 
-              dataKey: "forecast", 
-              stroke: "#3b82f6", 
-              strokeWidth: 3,
-              strokeDasharray: "3 3",
-              strokeOpacity: 0.5,
-              dot: false,
-              connectNulls: false
+            React.createElement(Bar, { 
+              dataKey: "dailyLessons", 
+              fill: "#3b82f6", 
+              fillOpacity: 0.3,
+              stroke: "#3b82f6",
+              strokeWidth: 1
             })
           )
         )

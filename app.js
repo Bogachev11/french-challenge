@@ -201,7 +201,30 @@ const FrenchChallengeDashboard = () => {
     // График времени по дням
     React.createElement('div', { className: "px-4 mb-1" },
       React.createElement('h3', { className: "text-sm font-medium text-gray-700" }, "Daily Time"),
-      React.createElement('div', { className: "text-xs text-gray-500 mb-1" }, "minutes"),
+      React.createElement('div', { className: "text-xs text-gray-500 mb-1 flex items-center gap-4" },
+        React.createElement('div', { className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            style: { 
+              width: '8px', 
+              height: '8px', 
+              backgroundColor: '#03a9f4',
+              borderRadius: '50%'
+            } 
+          }),
+          React.createElement('span', null, "Video")
+        ),
+        React.createElement('div', { className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            style: { 
+              width: '8px', 
+              height: '8px', 
+              backgroundColor: '#673ab7',
+              borderRadius: '50%'
+            } 
+          }),
+          React.createElement('span', null, "Homework")
+        )
+      ),
       React.createElement('div', { className: "h-24" },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(BarChart, { data: timeData },

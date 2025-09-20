@@ -12,7 +12,7 @@
 
 /* Оси и сетка */
 .recharts-cartesian-axis-tick-value {
-    font-size: 0.75rem;
+    font-size: 0.9rem;
     fill: #000000;
     font-weight: 400;
 }

@@ -11,16 +11,16 @@ const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar } = Re
 const FrenchChallengeDashboard = () => {
   // Тестовые данные - 10 дней из 90
   const testData = [
-    { day: 1, lessons: 1, videoTime: 35, homeworkTime: 10, mood: 4 },
-    { day: 2, lessons: 2, videoTime: 40, homeworkTime: 12, mood: 4 },
-    { day: 3, lessons: 2, videoTime: 25, homeworkTime: 13, mood: 3 },
-    { day: 4, lessons: 3, videoTime: 45, homeworkTime: 16, mood: 5 },
-    { day: 5, lessons: 4, videoTime: 30, homeworkTime: 13, mood: 4 },
-    { day: 6, lessons: 4, videoTime: 0, homeworkTime: 0, mood: 2 }, // пропущенный день
-    { day: 7, lessons: 5, videoTime: 42, homeworkTime: 13, mood: 3 },
-    { day: 8, lessons: 6, videoTime: 38, homeworkTime: 10, mood: 4 },
-    { day: 9, lessons: 7, videoTime: 32, homeworkTime: 7, mood: 4 },
-    { day: 10, lessons: 8, videoTime: 50, homeworkTime: 17, mood: 5 }
+    { day: 1, lessons: 1, videoTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
+    { day: 2, lessons: 2, videoTime: 10, homeworkTime: 12, otherTime: 0, mood: 4 },
+    { day: 3, lessons: 2, videoTime: 15, homeworkTime: 13, otherTime: 30, mood: 3 },
+    { day: 4, lessons: 3, videoTime: 15, homeworkTime: 16, otherTime: 0, mood: 5 },
+    { day: 5, lessons: 4, videoTime: 10, homeworkTime: 13, otherTime: 0, mood: 4 },
+    { day: 6, lessons: 4, videoTime: 0, homeworkTime: 0, otherTime: 30, mood: 2 }, // пропущенный день
+    { day: 7, lessons: 5, videoTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
+    { day: 8, lessons: 5, videoTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
+    { day: 9, lessons: 6, videoTime: 12, homeworkTime: 7, otherTime: 0, mood: 4 },
+    { day: 10, lessons: 7, videoTime: 10, homeworkTime: 17, otherTime: 0,mood: 5 }
   ];
 
   const currentDay = testData.length;
@@ -68,7 +68,8 @@ const FrenchChallengeDashboard = () => {
     timeData.push({
       day: day,
       videoTime: existingDay ? existingDay.videoTime : 0,
-      homeworkTime: existingDay ? existingDay.homeworkTime : 0
+      homeworkTime: existingDay ? existingDay.homeworkTime : 0,
+      otherTime: existingDay ? existingDay.otherTime : 0
     });
   }
   
@@ -116,7 +117,7 @@ const FrenchChallengeDashboard = () => {
     }
   }
 
-  return React.createElement('div', { className: "max-w-md mx-auto bg-white min-h-screen" },
+  return React.createElement('div', { className: "max-w-md mx-auto bg-white min-h-screen border border-gray-300 px-1" },
     // Заголовок
     React.createElement('div', { className: "bg-data-categories-neutral text-black px-4 pt-4 pb-0 relative mb-0" },
       React.createElement('h1', { className: "text-2xl font-bold text-black" }, "French Course A2→B1"),
@@ -157,7 +158,10 @@ const FrenchChallengeDashboard = () => {
         React.createElement('div', { className: "text-xs text-gray-600" }, "total")
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
-        React.createElement('div', { className: "text-lg font-bold text-gray-800" }, currentStreak),
+        React.createElement('div', { className: "text-lg font-bold text-gray-800 flex items-center gap-1" },
+          currentStreak > 0 && React.createElement('span', { style: { fontSize: '16px' } }, "⚡"),
+          React.createElement('span', null, currentStreak > 0 ? currentStreak : "")
+        ),
         React.createElement('div', { className: "text-xs text-gray-600" }, "streak")
       )
     ),
@@ -188,7 +192,7 @@ const FrenchChallengeDashboard = () => {
             }),
             React.createElement(YAxis, { 
               domain: [0, 40],
-              fontSize: 10
+              fontSize: 12
             }),
             React.createElement(Line, { 
               type: "step", 
@@ -216,7 +220,7 @@ const FrenchChallengeDashboard = () => {
     // График времени по дням
     React.createElement('div', { className: "px-4 mb-1" },
       React.createElement('h3', { className: "text-sm font-medium text-gray-700" }, "Daily Time"),
-      React.createElement('div', { className: "text-xs text-gray-500 mb-1 flex items-center gap-4" },
+      React.createElement('div', { className: "text-xs text-gray-500 mb-1 flex items-center gap-3" },
         React.createElement('div', { className: "flex items-center gap-1" },
           React.createElement('div', { 
             style: { 
@@ -238,6 +242,17 @@ const FrenchChallengeDashboard = () => {
             } 
           }),
           React.createElement('span', null, "Homework")
+        ),
+        React.createElement('div', { className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            style: { 
+              width: '8px', 
+              height: '8px', 
+              backgroundColor: '#9ca3af',
+              borderRadius: '50%'
+            } 
+          }),
+          React.createElement('span', null, "Other")
         )
       ),
       React.createElement('div', { className: "h-24" },
@@ -252,10 +267,11 @@ const FrenchChallengeDashboard = () => {
             }),
             React.createElement(YAxis, { 
               domain: [0, 80],
-              fontSize: 10
+              fontSize: 12
             }),
             React.createElement(Bar, { dataKey: "videoTime", stackId: "time", fill: "#03a9f4" }),
-            React.createElement(Bar, { dataKey: "homeworkTime", stackId: "time", fill: "#673ab7" })
+            React.createElement(Bar, { dataKey: "homeworkTime", stackId: "time", fill: "#673ab7" }),
+            React.createElement(Bar, { dataKey: "otherTime", stackId: "time", fill: "#9ca3af" })
           )
         )
       )
@@ -273,11 +289,11 @@ const FrenchChallengeDashboard = () => {
               dataKey: "day", 
               domain: [0, 90],
               ticks: [1, 10, 30, 60, 90],
-              tick: { fontSize: 10 }
+              tick: { fontSize: 12 }
             }),
             React.createElement(YAxis, { 
               domain: [1, 5],
-              fontSize: 10
+              fontSize: 12
             }),
             React.createElement(Line, { 
               type: "monotone", 
@@ -316,7 +332,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (typeof React !== 'undefined' && typeof Recharts !== 'undefined') {
     ReactDOM.render(React.createElement(FrenchChallengeDashboard), document.getElementById('root'));
     
-    // Принудительно скрыть линии оси Y после рендеринга
+    // Принудительно скрыть линии оси Y и обновить размер шрифта после рендеринга
     setTimeout(() => {
       // Скрыть все линии оси Y
       const yAxisLines = document.querySelectorAll('.recharts-cartesian-axis-y line');
@@ -326,6 +342,13 @@ document.addEventListener('DOMContentLoaded', function() {
         line.style.opacity = '0';
       });
       
+      // Принудительно обновить размер шрифта всех текстов осей
+      const axisTexts = document.querySelectorAll('.recharts-cartesian-axis-tick-value');
+      axisTexts.forEach(text => {
+        text.style.fontSize = '12px';
+        text.style.fill = '#000000';
+      });
+      
       // Дополнительно скрыть через CSS классы
       const style = document.createElement('style');
       style.textContent = `
@@ -333,6 +356,10 @@ document.addEventListener('DOMContentLoaded', function() {
           display: none !important;
           visibility: hidden !important;
           opacity: 0 !important;
+        }
+        .recharts-cartesian-axis-tick-value {
+          font-size: 12px !important;
+          fill: #000000 !important;
         }
       `;
       document.head.appendChild(style);

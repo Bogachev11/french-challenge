@@ -1,0 +1,225 @@
+/* Tailwind CSS стили для дашборда */
+* {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+.max-w-md {
+    max-width: 28rem;
+}
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.bg-white {
+    background-color: #ffffff;
+}
+
+.min-h-screen {
+    min-height: 100vh;
+}
+
+.bg-blue-600 {
+    background-color: #2563eb;
+}
+
+.text-white {
+    color: #ffffff;
+}
+
+.p-4 {
+    padding: 1rem;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.text-blue-100 {
+    color: #dbeafe;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.mt-2 {
+    margin-top: 0.5rem;
+}
+
+.w-2 {
+    width: 0.5rem;
+}
+
+.h-2 {
+    height: 0.5rem;
+}
+
+.bg-green-400 {
+    background-color: #4ade80;
+}
+
+.rounded-full {
+    border-radius: 9999px;
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: .5;
+    }
+}
+
+.text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+}
+
+.text-green-200 {
+    color: #bbf7d0;
+}
+
+.grid {
+    display: grid;
+}
+
+.grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.bg-gray-50 {
+    background-color: #f9fafb;
+}
+
+.p-2 {
+    padding: 0.5rem;
+}
+
+.rounded-lg {
+    border-radius: 0.5rem;
+}
+
+.text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+}
+
+.text-gray-800 {
+    color: #1f2937;
+}
+
+.text-gray-600 {
+    color: #4b5563;
+}
+
+.px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem;
+}
+
+.text-gray-700 {
+    color: #374151;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.text-gray-500 {
+    color: #6b7280;
+}
+
+.h-40 {
+    height: 10rem;
+}
+
+.h-24 {
+    height: 6rem;
+}
+
+.h-20 {
+    height: 5rem;
+}
+
+.relative {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.pointer-events-none {
+    pointer-events: none;
+}
+
+/* Стили для графиков */
+.recharts-wrapper {
+    font-family: system-ui, -apple-system, sans-serif;
+}
+
+.recharts-cartesian-axis-tick-value {
+    font-size: 10px;
+    fill: #6b7280;
+}
+
+.recharts-cartesian-grid-horizontal line {
+    stroke: #e5e7eb;
+    stroke-width: 1;
+}
+
+.recharts-cartesian-grid-vertical line {
+    stroke: #e5e7eb;
+    stroke-width: 1;
+}
+
+.recharts-line {
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.recharts-bar {
+    stroke-width: 0;
+}
+
+/* Адаптивность */
+@media (max-width: 640px) {
+    .max-w-md {
+        max-width: 100%;
+    }
+    
+    .px-4 {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;

@@ -1,0 +1,32 @@
+{
+  "name": "french-challenge-dashboard",
+  "version": "1.0.0",
+  "description": "Дашборд для отслеживания прогресса изучения французского языка A2→B1",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "serve": "npx serve ."
+  },
+  "keywords": [
+    "french",
+    "dashboard",
+    "learning",
+    "progress",
+    "react"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "recharts": "^2.15.4"
+  },
+  "devDependencies": {
+    "@babel/standalone": "^7.23.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

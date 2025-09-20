@@ -186,19 +186,19 @@ const FrenchChallengeDashboard = () => {
     ),
 
     // График уроков
-    React.createElement('div', { className: "px-4 mb-1" },
+    React.createElement('div', { className: "px-4 mb-0" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Lessons Progress"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "cumulative lessons completed"),
-      React.createElement('div', { className: "h-40 relative" },
+      React.createElement('div', { className: "h-40 relative", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 5, top: 5, bottom: 5 } },
+          React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 5, top: 5, bottom: 0 } },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
               domain: [0, 90],
               ticks: [1, 10, 30, 60, 90],
-              tick: { fontSize: 0 },
-              tickLine: { stroke: '#000000' }
+              tickLine: { stroke: '#000000', strokeWidth: 1 },
+              tick: { fontSize: 0, opacity: 0 }
             }),
             React.createElement(YAxis, { 
               domain: [0, Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5],
@@ -245,7 +245,7 @@ const FrenchChallengeDashboard = () => {
     ),
 
     // График времени по дням
-    React.createElement('div', { className: "px-4 mb-1" },
+    React.createElement('div', { className: "px-4 mb-0" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Daily Time"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1 flex items-center gap-3" },
         React.createElement('div', { className: "flex items-center gap-1" },
@@ -282,16 +282,16 @@ const FrenchChallengeDashboard = () => {
           React.createElement('span', null, "Other")
         )
       ),
-      React.createElement('div', { className: "h-40" },
+      React.createElement('div', { className: "h-40", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 5, top: 5, bottom: 5 } },
+          React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 5, top: 5, bottom: 0 } },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
               domain: [0, 90],
               ticks: [1, 10, 30, 60, 90],
-              tick: { fontSize: 0 },
-              tickLine: { stroke: '#000000' }
+              tickLine: { stroke: '#000000', strokeWidth: 1 },
+              tick: { fontSize: 0, opacity: 0 }
             }),
             React.createElement(YAxis, { 
               domain: [0, 80],
@@ -307,10 +307,10 @@ const FrenchChallengeDashboard = () => {
     ),
 
     // График настроения
-    React.createElement('div', { className: "px-4 mb-1" },
+    React.createElement('div', { className: "px-4 mb-0" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Emotional State"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – Absolutely brilliant."),
-      React.createElement('div', { className: "h-28 relative" },
+      React.createElement('div', { className: "h-28 relative", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(LineChart, { data: moodData, margin: { left: 5, right: 5, top: 5, bottom: 5 } },
             React.createElement('defs', null,

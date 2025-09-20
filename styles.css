@@ -47,11 +47,6 @@
     display: none !important;
 }
 
-/* Скрыть цифры на оси X для первых двух графиков */
-.recharts-cartesian-axis-x .recharts-cartesian-axis-tick-value {
-    opacity: 0 !important;
-}
-
 /* Убрать отступы графиков */
 .recharts-wrapper {
     margin-left: 25px !important;

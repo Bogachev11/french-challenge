@@ -1,62 +1,102 @@
-# French Challenge Dashboard
+# French Challenge
 
-Дашборд для отслеживания прогресса изучения французского языка A2→B1.
+A beautiful, responsive dashboard for tracking French language learning progress with Google Sheets integration.
 
-## Описание
+## Features
 
-Этот проект представляет собой интерактивный дашборд, который помогает отслеживать прогресс изучения французского языка. Дашборд включает:
+- 📊 **Real-time data** from Google Sheets
+- 📈 **Interactive charts** showing learning progress
+- 🎯 **Goal tracking** (40 lessons in 90 days)
+- 📱 **Mobile responsive** design
+- 🔄 **Auto-updating** data
 
-- **Метрики прогресса**: количество пройденных уроков, среднее время в день, общее время, текущий страйк
-- **График кумулятивных уроков**: показывает прогресс и прогноз завершения курса
-- **График ежедневного времени**: визуализация времени, потраченного на видео и домашние задания
-- **График эмоционального состояния**: отслеживание настроения с скользящей средней
+## Charts
 
-## Структура проекта
+1. **Lessons Progress** - Cumulative lessons completed with automated forecast
+2. **Daily Time** - Video time, homework time, and other activities
+3. **Emotional State** - Mood tracking with moving average
 
-```
-├── index.html          # Главный HTML файл
-├── app.js             # React компонент (JavaScript)
-├── styles.css         # CSS стили (Tailwind)
-├── package.json       # Конфигурация проекта
-└── README.md          # Документация
-```
+## Setup
 
-## Запуск проекта
+### Local Development
 
-### Вариант 1: Простой HTTP сервер (Python)
+1. Clone the repository:
 ```bash
-python -m http.server 8000
+git clone https://github.com/bogachev11/french-challenge.git
+cd french-challenge
 ```
-Затем откройте http://localhost:8000 в браузере.
 
-### Вариант 2: Node.js сервер
+2. Install dependencies:
 ```bash
 npm install
-npm run serve
 ```
 
-### Вариант 3: Прямое открытие
-Просто откройте файл `index.html` в браузере (некоторые функции могут не работать из-за CORS).
+3. Create environment file:
+```bash
+cp env.example .env.local
+```
 
-## Технологии
+4. Start local server:
+```bash
+npm start
+```
 
-- **React 18** - для создания пользовательского интерфейса
-- **Recharts** - для построения графиков
-- **Tailwind CSS** - для стилизации (встроенные стили)
-- **Babel** - для трансформации JSX
+5. Open http://localhost:3000
 
-## Особенности
+### Google Sheets Setup
 
-- Адаптивный дизайн для мобильных устройств
-- Интерактивные графики с прогнозированием
-- Отслеживание эмоционального состояния
-- Система страйков для мотивации
-- Минималистичный и понятный интерфейс
+1. Create a Google Sheet with the following columns:
+   - Column A: Index
+   - Column B: Day (1-90)
+   - Column C: Completed_Lessons
+   - Column D: Attempted_Lessons
+   - Column E: Video_Time (minutes)
+   - Column F: Homework_Time (minutes)
+   - Column G: Other_Time (minutes)
+   - Column H: Mood (1-5)
 
-## Данные
+2. Name the sheet "90_days_list"
 
-Проект использует тестовые данные для демонстрации функциональности. В реальном использовании данные можно загружать из API или локального хранилища.
+3. Make the sheet publicly accessible (View permissions)
 
-## Лицензия
+4. Update the SHEET_ID in your environment variables
 
-MIT
+## Deployment
+
+### GitHub Pages
+
+The project automatically deploys to GitHub Pages when you push to the `main` branch.
+
+1. Enable GitHub Pages in repository settings
+2. Set source to "GitHub Actions"
+3. Push to main branch
+
+### Manual Deployment
+
+```bash
+npm run deploy
+```
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `REACT_APP_GOOGLE_SHEETS_API_KEY` | Google Sheets API key | Provided |
+| `REACT_APP_GOOGLE_SHEETS_ID` | Google Sheets document ID | Provided |
+| `REACT_APP_GOOGLE_SHEETS_RANGE` | Data range in sheet | `90_days_list!A2:H` |
+
+## Tech Stack
+
+- **React** - UI framework
+- **Recharts** - Chart library
+- **Tailwind CSS** - Styling
+- **Google Sheets API** - Data source
+- **GitHub Pages** - Hosting
+
+## Author
+
+Aleksandr Bogachev - [@bogachev_al](https://twitter.com/bogachev_al)
+
+## License
+
+MIT License

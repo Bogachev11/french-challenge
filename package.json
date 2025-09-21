@@ -1,32 +1,30 @@
 {
-  "name": "french-challenge-dashboard",
+  "name": "french-challenge",
   "version": "1.0.0",
-  "description": "Дашборд для отслеживания прогресса изучения французского языка A2→B1",
+  "description": "French A2→B1 Learning Dashboard with Google Sheets integration",
   "main": "index.html",
   "scripts": {
-    "start": "python -m http.server 8000",
-    "serve": "npx serve ."
+    "start": "python -m http.server 3000",
+    "dev": "python -m http.server 3000",
+    "build": "echo 'No build step needed for static files'",
+    "deploy": "gh-pages -d ."
   },
   "keywords": [
     "french",
-    "dashboard",
     "learning",
-    "progress",
-    "react"
+    "dashboard",
+    "react",
+    "recharts",
+    "google-sheets"
   ],
-  "author": "",
+  "author": "Aleksandr Bogachev",
   "license": "MIT",
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "recharts": "^2.15.4"
-  },
   "devDependencies": {
-    "@babel/standalone": "^7.23.0"
+    "gh-pages": "^6.1.1"
   },
-  "browserslist": [
-    "> 1%",
-    "last 2 versions",
-    "not dead"
-  ]
+  "homepage": "https://bogachev11.github.io/french-challenge",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bogachev11/french-challenge.git"
+  }
 }

@@ -686,7 +686,8 @@ const FrenchChallengeDashboard = () => {
 // Рендеринг компонента с проверкой
 document.addEventListener('DOMContentLoaded', function() {
   if (typeof React !== 'undefined' && typeof Recharts !== 'undefined') {
-    ReactDOM.render(React.createElement(FrenchChallengeDashboard), document.getElementById('root'));
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(FrenchChallengeDashboard));
     
     // Принудительно скрыть линии оси Y и обновить размер шрифта после рендеринга
     setTimeout(() => {

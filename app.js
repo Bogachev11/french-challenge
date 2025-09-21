@@ -9,18 +9,9 @@ if (typeof Recharts === 'undefined') {
 const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, ComposedChart } = Recharts;
 
 const FrenchChallengeDashboard = () => {
-  // Данные из Google Sheets (CSV формат)
+  // Данные из Google Sheets (CSV формат) - только день 1 для тестирования
   const testData = [
-    { day: 1, completedLessons: "1", attemptedLessons: "", videoTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
-    { day: 2, completedLessons: "2", attemptedLessons: "3", videoTime: 20, homeworkTime: 12, otherTime: 0, mood: 4 },
-    { day: 3, completedLessons: "3", attemptedLessons: "", videoTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
-    { day: 4, completedLessons: "", attemptedLessons: "5,6", videoTime: 40, homeworkTime: 0, otherTime: 0, mood: 2 },
-    { day: 5, completedLessons: "4,5", attemptedLessons: "", videoTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
-    { day: 6, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 }, // пропущенный день
-    { day: 7, completedLessons: "6", attemptedLessons: "", videoTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
-    { day: 8, completedLessons: "7", attemptedLessons: "", videoTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
-    { day: 9, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
-    { day: 10, completedLessons: "8,9,10", attemptedLessons: "", videoTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
+    { day: 1, completedLessons: "2", attemptedLessons: "1", videoTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 }
   ];
 
   // Функция для парсинга строки уроков из Google Sheets
@@ -43,9 +34,9 @@ const FrenchChallengeDashboard = () => {
   const currentLessonsPerDay = completedLessons / currentDay;
   const allData = [];
   
-  // Заполняем данные только до текущего дня с накопленным количеством уроков
+  // Заполняем данные для всех 90 дней с накопленным количеством уроков
   let cumulativeLessons = 0;
-  for (let day = 1; day <= currentDay; day++) {
+  for (let day = 1; day <= 90; day++) {
     const existingDay = testData.find(d => d.day === day);
     if (existingDay) {
       const dayCompletedLessons = parseLessons(existingDay.completedLessons).length;
@@ -213,24 +204,24 @@ const FrenchChallengeDashboard = () => {
               axisLine: false,
               fontSize: 12
             }),
-            React.createElement(Line, { 
-              type: "step", 
-              dataKey: "lessons", 
-              stroke: "#3b82f6", 
-              strokeWidth: 3,
-              dot: false,
-              connectNulls: false
-            }),
             React.createElement(Bar, { 
               dataKey: "dailyLessons", 
               fill: "#1d4ed8", 
               fillOpacity: 0.8,
               stroke: "#1d4ed8",
               strokeWidth: 1
+            }),
+            React.createElement(Line, { 
+              type: "step", 
+              dataKey: "lessons", 
+              stroke: currentDay >= 4 ? "#3b82f6" : "transparent", 
+              strokeWidth: 3,
+              dot: false,
+              connectNulls: false
             })
           )
         ),
-        React.createElement('div', { 
+        currentDay >= 4 ? React.createElement('div', { 
           className: "absolute text-sm font-bold pointer-events-auto", 
           style: { 
             left: `${15 + (currentDay / 90) * 80}%`, 
@@ -240,7 +231,7 @@ const FrenchChallengeDashboard = () => {
             zIndex: 10,
             transform: 'translateY(-50%)'
           }
-        }, "cumulative lessons"),
+        }, "cumulative lessons") : null,
         React.createElement('div', { 
           className: "absolute text-xs text-gray-500", 
           style: { 
@@ -348,20 +339,44 @@ const FrenchChallengeDashboard = () => {
               dataKey: "mood", 
               stroke: "transparent",
               strokeWidth: 0,
-              dot: { fill: "#6b7280", fillOpacity: 0.5, r: 2 },
+              dot: { 
+                fill: currentDay >= 4 ? "#6b7280" : (() => {
+                  const moodValue = testData.find(d => d.day === currentDay)?.mood || 4;
+                  if (moodValue <= 1) return '#ef4444';
+                  if (moodValue >= 5) return '#3b82f6';
+                  if (moodValue <= 3) return '#8b5cf6';
+                  return '#3b82f6';
+                })(),
+                fillOpacity: currentDay >= 4 ? 0.5 : 1, 
+                r: currentDay >= 4 ? 1.5 : 4.5 
+              },
               connectNulls: false
             }),
+            currentDay < 4 ? React.createElement(Line, { 
+              type: "monotone", 
+              dataKey: "mood", 
+              stroke: (() => {
+                const moodValue = testData.find(d => d.day === currentDay)?.mood || 4;
+                if (moodValue <= 1) return '#ef4444';
+                if (moodValue >= 5) return '#3b82f6';
+                if (moodValue <= 3) return '#8b5cf6';
+                return '#3b82f6';
+              })(),
+              strokeWidth: 2,
+              dot: false,
+              connectNulls: false
+            }) : null,
             React.createElement(Line, { 
               type: "monotone", 
               dataKey: "movingAvg", 
-              stroke: "url(#moodGradient)", 
+              stroke: currentDay >= 4 ? "url(#moodGradient)" : "transparent", 
               strokeWidth: 4,
               dot: false,
               connectNulls: false
             })
           )
         ),
-        React.createElement('div', { 
+        currentDay >= 4 ? React.createElement('div', { 
           className: "absolute text-sm font-bold pointer-events-auto", 
           style: { 
             left: labelXPosition, 
@@ -371,7 +386,7 @@ const FrenchChallengeDashboard = () => {
             zIndex: 10,
             transform: 'translateY(-50%)'
           }
-        }, "moving average")
+        }, "moving average") : null
       )
     ),
 

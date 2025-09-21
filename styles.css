@@ -236,3 +236,7 @@
 .outlier {
     opacity: 1;
 }
+
+.thin-nbsp::after {
+    content: "\202F"; /* узкий неразрывный пробел (U+202F) */
+}

@@ -356,12 +356,16 @@ const FrenchChallengeDashboard = () => {
         )
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
-        React.createElement('div', { className: "text-xl font-bold text-gray-800" }, `${avgTime}m`),
+        React.createElement('div', { className: "text-xl font-bold text-gray-800" }, 
+          `${avgTime}`, React.createElement('span', { className: "thin-nbsp" }), 'm'
+        ),
         React.createElement('div', { className: "text-sm text-gray-600" }, "avg/day")
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
-        React.createElement('div', { className: "text-xl font-bold text-gray-800" }, `${Math.round(totalTime/60)}h`),
-        React.createElement('div', { className: "text-sm text-gray-600" }, "total")
+        React.createElement('div', { className: "text-xl font-bold text-gray-800" }, 
+          `${Math.round(totalTime/60)}`, React.createElement('span', { className: "thin-nbsp" }), 'h'
+        ),
+        React.createElement('div', { className: "text-sm text-gray-600" }, "total time")
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
         React.createElement('div', { className: "text-xl font-bold text-gray-800 flex items-center gap-1" },
@@ -540,12 +544,12 @@ const FrenchChallengeDashboard = () => {
               domain: [0, 80],
               ticks: [0, 30, 60, 80], // Задаем конкретные тики
               tickFormatter: (value) => {
-                if (value === 0) return '0m';
-                if (value < 60) return `${value}m`;
+                if (value === 0) return '0\u202Fm';
+                if (value < 60) return `${value}\u202Fm`;
                 const hours = Math.floor(value / 60);
                 const minutes = value % 60;
-                if (minutes === 0) return `${hours}h`;
-                return `${hours}h${minutes}m`;
+                if (minutes === 0) return `${hours}\u202Fh`;
+                return `${hours}\u202Fh\u202F${minutes}\u202Fm`;
               },
               axisLine: false,
               fontSize: 12

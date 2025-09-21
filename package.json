@@ -7,7 +7,8 @@
     "start": "python -m http.server 3000",
     "dev": "python -m http.server 3000",
     "build": "echo 'No build step needed for static files'",
-    "deploy": "gh-pages -d ."
+    "deploy": "gh-pages -d .",
+    "screenshot": "node scripts/screenshot.js"
   },
   "keywords": [
     "french",
@@ -20,7 +21,8 @@
   "author": "Aleksandr Bogachev",
   "license": "MIT",
   "devDependencies": {
-    "gh-pages": "^6.1.1"
+    "gh-pages": "^6.1.1",
+    "puppeteer": "^21.0.0"
   },
   "homepage": "https://bogachev11.github.io/french-challenge",
   "repository": {

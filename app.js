@@ -702,12 +702,34 @@ document.addEventListener('DOMContentLoaded', function() {
       // Принудительно обновить размер шрифта всех текстов осей
       const axisTexts = document.querySelectorAll('.recharts-cartesian-axis-tick-value');
       axisTexts.forEach(text => {
-        text.style.fontSize = '12px';
+        text.style.fontSize = '12px !important';
+        text.style.setProperty('font-size', '12px', 'important');
         text.style.fill = '#000000';
         text.style.fontWeight = 'normal';
+        text.style.setProperty('font-weight', 'normal', 'important');
+      });
+      
+      // Дополнительная проверка для осей Y
+      const yAxisTexts = document.querySelectorAll('.recharts-cartesian-axis-y .recharts-cartesian-axis-tick-value');
+      yAxisTexts.forEach(text => {
+        text.style.fontSize = '12px !important';
+        text.style.setProperty('font-size', '12px', 'important');
+        text.style.fontWeight = 'normal';
+        text.style.setProperty('font-weight', 'normal', 'important');
       });
 
     }, 100);
+    
+    // Дополнительная проверка через больший интервал
+    setTimeout(() => {
+      const allAxisTexts = document.querySelectorAll('.recharts-cartesian-axis-tick-value');
+      allAxisTexts.forEach(text => {
+        text.style.fontSize = '12px !important';
+        text.style.setProperty('font-size', '12px', 'important');
+        text.style.fontWeight = 'normal';
+        text.style.setProperty('font-weight', 'normal', 'important');
+      });
+    }, 500);
   } else {
     document.getElementById('root').innerHTML = '<div style="padding: 20px; text-align: center; color: red;">Library loading error. Check internet connection.</div>';
   }

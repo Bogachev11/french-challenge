@@ -12,9 +12,9 @@
 
 /* Оси и сетка */
 .recharts-cartesian-axis-tick-value {
-    font-size: 0.9rem;
-    fill: #000000;
-    font-weight: 400;
+    font-size: 12px !important;
+    fill: #000000 !important;
+    font-weight: normal !important;
 }
 
 .recharts-cartesian-axis-tick-line {
@@ -46,6 +46,9 @@
 .recharts-cartesian-axis-y .recharts-cartesian-axis-tick-value {
     text-anchor: middle !important;
     dominant-baseline: middle !important;
+    font-size: 12px !important;
+    fill: #000000 !important;
+    font-weight: normal !important;
 }
 
 /* Исправление позиционирования верхнего лейбла */
@@ -203,7 +206,7 @@
     }
     
     .recharts-cartesian-axis-tick-value {
-        font-size: 0.9rem; /* Убираем изменение размера на мобильных */
+        font-size: 12px !important; /* Единый размер на всех устройствах */
     }
 }
 

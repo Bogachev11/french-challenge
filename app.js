@@ -9,10 +9,39 @@ if (typeof Recharts === 'undefined') {
 const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, ComposedChart } = Recharts;
 
 const FrenchChallengeDashboard = () => {
-  // Данные из Google Sheets (CSV формат) - только день 1 для тестирования
+  // Состояние для эмулятора
+  const [currentDayState, setCurrentDayState] = React.useState(1);
+  
+  // Данные из Google Sheets (CSV формат) - полные данные для эмулятора
   const testData = [
-    { day: 1, completedLessons: "2", attemptedLessons: "1", videoTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 }
+    { day: 1, completedLessons: "1", attemptedLessons: "", videoTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
+    { day: 2, completedLessons: "2", attemptedLessons: "3", videoTime: 20, homeworkTime: 12, otherTime: 0, mood: 4 },
+    { day: 3, completedLessons: "3", attemptedLessons: "", videoTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
+    { day: 4, completedLessons: "", attemptedLessons: "5,6", videoTime: 40, homeworkTime: 0, otherTime: 0, mood: 2 },
+    { day: 5, completedLessons: "4,5", attemptedLessons: "", videoTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
+    { day: 6, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 }, // пропущенный день
+    { day: 7, completedLessons: "6", attemptedLessons: "", videoTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
+    { day: 8, completedLessons: "7", attemptedLessons: "", videoTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
+    { day: 9, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
+    { day: 10, completedLessons: "8,9,10", attemptedLessons: "", videoTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
   ];
+
+  // Обработчик клавиш для эмулятора
+  React.useEffect(() => {
+    const handleKeyPress = (event) => {
+      if (event.key === 'ArrowLeft' && currentDayState > 1) {
+        setCurrentDayState(currentDayState - 1);
+      } else if (event.key === 'ArrowRight' && currentDayState < 10) {
+        setCurrentDayState(currentDayState + 1);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentDayState]);
+
+  // Фильтруем данные до текущего дня для эмулятора
+  const filteredTestData = testData.filter(day => day.day <= currentDayState);
 
   // Функция для парсинга строки уроков из Google Sheets
   const parseLessons = (lessonsString) => {
@@ -20,15 +49,15 @@ const FrenchChallengeDashboard = () => {
     return lessonsString.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
   };
 
-  const currentDay = testData.length;
+  const currentDay = currentDayState;
   
   // Рассчитываем общее количество завершенных уроков
-  const allCompletedLessons = testData.flatMap(day => parseLessons(day.completedLessons));
+  const allCompletedLessons = filteredTestData.flatMap(day => parseLessons(day.completedLessons));
   const completedLessons = allCompletedLessons.length;
   
   // Рассчитываем общее время (включая otherTime)
-  const totalTime = testData.reduce((sum, day) => sum + day.videoTime + day.homeworkTime + day.otherTime, 0);
-  const avgTime = Math.round(totalTime / testData.filter(d => (d.videoTime + d.homeworkTime + d.otherTime) > 0).length);
+  const totalTime = filteredTestData.reduce((sum, day) => sum + day.videoTime + day.homeworkTime + day.otherTime, 0);
+  const avgTime = Math.round(totalTime / filteredTestData.filter(d => (d.videoTime + d.homeworkTime + d.otherTime) > 0).length);
   
   // Прогноз уроков
   const currentLessonsPerDay = completedLessons / currentDay;
@@ -37,7 +66,7 @@ const FrenchChallengeDashboard = () => {
   // Заполняем данные для всех 90 дней с накопленным количеством уроков
   let cumulativeLessons = 0;
   for (let day = 1; day <= 90; day++) {
-    const existingDay = testData.find(d => d.day === day);
+    const existingDay = filteredTestData.find(d => d.day === day);
     if (existingDay) {
       const dayCompletedLessons = parseLessons(existingDay.completedLessons).length;
       cumulativeLessons += dayCompletedLessons;
@@ -58,7 +87,7 @@ const FrenchChallengeDashboard = () => {
   // Данные для графика времени (все 90 дней)
   const timeData = [];
   for (let day = 1; day <= 90; day++) {
-    const existingDay = testData.find(d => d.day === day);
+    const existingDay = filteredTestData.find(d => d.day === day);
     timeData.push({
       day: day,
       videoTime: existingDay ? existingDay.videoTime : 0,
@@ -73,7 +102,7 @@ const FrenchChallengeDashboard = () => {
   let smoothedValue = null;
   
   for (let day = 1; day <= 90; day++) {
-    const existingDay = testData.find(d => d.day === day);
+    const existingDay = filteredTestData.find(d => d.day === day);
     let movingAvg = null;
     
     if (existingDay) {
@@ -114,8 +143,8 @@ const FrenchChallengeDashboard = () => {
 
   // Подсчет страйка (дни с активностью)
   let currentStreak = 0;
-  for (let i = testData.length - 1; i >= 0; i--) {
-    const day = testData[i];
+  for (let i = filteredTestData.length - 1; i >= 0; i--) {
+    const day = filteredTestData[i];
     const hasActivity = (day.videoTime + day.homeworkTime + day.otherTime) > 0 || 
                        parseLessons(day.completedLessons).length > 0 || 
                        parseLessons(day.attemptedLessons).length > 0;
@@ -131,7 +160,7 @@ const FrenchChallengeDashboard = () => {
     // Заголовок
     React.createElement('div', { className: "bg-data-categories-neutral text-black px-4 pt-4 pb-0 relative mb-0" },
       React.createElement('h1', { className: "text-3xl font-bold text-black" }, "French A2→B1"),
-      React.createElement('p', { className: "text-black text-base opacity-70" }, `90 days • 40 lessons • Day ${currentDay}`),
+        React.createElement('p', { className: "text-black text-base opacity-70" }, `90 days • 40 lessons • Day ${currentDay} (← → to navigate)`),
       React.createElement('div', { className: "absolute top-5 right-4 flex items-center gap-2" },
         React.createElement('div', { className: "w-2 h-2 bg-black rounded-full animate-pulse" }),
         React.createElement('span', { className: "text-sm text-black opacity-70" }, "updated today")
@@ -217,7 +246,8 @@ const FrenchChallengeDashboard = () => {
               stroke: currentDay >= 4 ? "#3b82f6" : "transparent", 
               strokeWidth: 3,
               dot: false,
-              connectNulls: false
+              connectNulls: false,
+              data: currentDay >= 4 ? allData.filter(d => d.day <= currentDay) : []
             })
           )
         ),
@@ -341,14 +371,14 @@ const FrenchChallengeDashboard = () => {
               strokeWidth: 0,
               dot: { 
                 fill: currentDay >= 4 ? "#6b7280" : (() => {
-                  const moodValue = testData.find(d => d.day === currentDay)?.mood || 4;
+                  const moodValue = filteredTestData.find(d => d.day === currentDay)?.mood || 4;
                   if (moodValue <= 1) return '#ef4444';
                   if (moodValue >= 5) return '#3b82f6';
                   if (moodValue <= 3) return '#8b5cf6';
                   return '#3b82f6';
                 })(),
                 fillOpacity: currentDay >= 4 ? 0.5 : 1, 
-                r: currentDay >= 4 ? 1.5 : 4.5 
+                r: currentDay >= 4 ? 3 : 4.5 
               },
               connectNulls: false
             }),
@@ -356,7 +386,7 @@ const FrenchChallengeDashboard = () => {
               type: "monotone", 
               dataKey: "mood", 
               stroke: (() => {
-                const moodValue = testData.find(d => d.day === currentDay)?.mood || 4;
+                const moodValue = filteredTestData.find(d => d.day === currentDay)?.mood || 4;
                 if (moodValue <= 1) return '#ef4444';
                 if (moodValue >= 5) return '#3b82f6';
                 if (moodValue <= 3) return '#8b5cf6';
@@ -364,7 +394,8 @@ const FrenchChallengeDashboard = () => {
               })(),
               strokeWidth: 2,
               dot: false,
-              connectNulls: false
+              connectNulls: false,
+              data: filteredTestData.filter(d => d.day === currentDay)
             }) : null,
             React.createElement(Line, { 
               type: "monotone", 

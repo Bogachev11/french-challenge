@@ -42,9 +42,20 @@
     display: none !important;
 }
 
-/* Скрыть все линии оси Y */
-.recharts-cartesian-axis-y line[stroke="#000000"] {
-    display: none !important;
+/* Центрирование лейблов осей Y */
+.recharts-cartesian-axis-y .recharts-cartesian-axis-tick-value {
+    text-anchor: middle !important;
+    dominant-baseline: middle !important;
+}
+
+/* Исправление позиционирования верхнего лейбла */
+.recharts-cartesian-axis-y .recharts-cartesian-axis-tick-value:last-child {
+    transform: translateY(-2px) !important;
+}
+
+/* Альтернативный подход - через селектор по позиции */
+.recharts-cartesian-axis-y .recharts-cartesian-axis-tick-value[data-value] {
+    transform: translateY(0px) !important;
 }
 
 /* Убрать отступы графиков */

@@ -9,8 +9,8 @@ if (typeof Recharts === 'undefined') {
 const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, ComposedChart } = Recharts;
 
 const FrenchChallengeDashboard = () => {
-  // Состояние для эмулятора
-  const [currentDayState, setCurrentDayState] = React.useState(1);
+  // Состояние для эмулятора - ОТКЛЮЧЕНО
+  // const [currentDayState, setCurrentDayState] = React.useState(1);
   
   // Данные из Google Sheets (CSV формат) - полные данные для эмулятора
   const testData = [
@@ -26,8 +26,11 @@ const FrenchChallengeDashboard = () => {
     { day: 10, completedLessons: "8,9,10", attemptedLessons: "", videoTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
   ];
 
-  // Фильтруем данные до текущего дня для эмулятора
-  const filteredTestData = testData.filter(day => day.day <= currentDayState);
+  // Фильтруем данные до текущего дня для эмулятора - ОТКЛЮЧЕНО
+  // const filteredTestData = testData.filter(day => day.day <= currentDayState);
+  
+  // Используем все данные (последний день)
+  const filteredTestData = testData;
 
   // Функция для парсинга строки уроков из Google Sheets
   const parseLessons = (lessonsString) => {
@@ -35,21 +38,22 @@ const FrenchChallengeDashboard = () => {
     return lessonsString.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
   };
 
-  const currentDay = currentDayState;
+  // Текущий день - последний день из данных
+  const currentDay = testData[testData.length - 1].day;
 
-  // Обработчик клавиш для эмулятора
-  React.useEffect(() => {
-    const handleKeyPress = (event) => {
-      if (event.key === 'ArrowLeft' && currentDayState > 1) {
-        setCurrentDayState(currentDayState - 1);
-      } else if (event.key === 'ArrowRight' && currentDayState < 10) {
-        setCurrentDayState(currentDayState + 1);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentDayState]);
+  // Обработчик клавиш для эмулятора - ОТКЛЮЧЕН
+  // React.useEffect(() => {
+  //   const handleKeyPress = (event) => {
+  //     if (event.key === 'ArrowLeft' && currentDayState > 1) {
+  //       setCurrentDayState(currentDayState - 1);
+  //     } else if (event.key === 'ArrowRight' && currentDayState < 10) {
+  //       setCurrentDayState(currentDayState + 1);
+  //     }
+  //   };
+  //   
+  //   window.addEventListener('keydown', handleKeyPress);
+  //   return () => window.removeEventListener('keydown', handleKeyPress);
+  // }, [currentDayState]);
 
   // Обновляем выделение текущего дня при изменении
   React.useEffect(() => {
@@ -71,6 +75,24 @@ const FrenchChallengeDashboard = () => {
             text.style.fontWeight = 'bold !important';
             text.style.setProperty('font-weight', 'bold', 'important');
           }
+        }
+      });
+    }, 100);
+  }, [currentDay]);
+  
+  // Исправляем позиционирование верхних лейблов осей Y
+  React.useEffect(() => {
+    setTimeout(() => {
+      // Находим все лейблы осей Y
+      const yAxisLabels = document.querySelectorAll('.recharts-cartesian-axis-y .recharts-cartesian-axis-tick-value');
+      
+      yAxisLabels.forEach((label, index) => {
+        // Если это последний (верхний) лейбл
+        if (index === yAxisLabels.length - 1) {
+          // Сбрасываем все трансформации
+          label.style.transform = 'translateY(-2px)';
+          label.style.textAnchor = 'middle';
+          label.style.dominantBaseline = 'middle';
         }
       });
     }, 100);
@@ -98,15 +120,13 @@ const FrenchChallengeDashboard = () => {
       allData.push({ 
         day: day, 
         lessons: cumulativeLessons, 
-        dailyLessons: dayCompletedLessons, // количество уроков за день
-        forceUpdate: currentDay
+        dailyLessons: dayCompletedLessons // количество уроков за день
       });
     } else {
       allData.push({ 
         day: day, 
         lessons: cumulativeLessons, 
-        dailyLessons: 0, // нет уроков за день
-        forceUpdate: currentDay
+        dailyLessons: 0 // нет уроков за день
       });
     }
   }
@@ -119,8 +139,7 @@ const FrenchChallengeDashboard = () => {
       day: day,
       videoTime: existingDay ? existingDay.videoTime : 0,
       homeworkTime: existingDay ? existingDay.homeworkTime : 0,
-      otherTime: existingDay ? existingDay.otherTime : 0,
-      forceUpdate: currentDay
+      otherTime: existingDay ? existingDay.otherTime : 0
     });
   }
   
@@ -148,19 +167,19 @@ const FrenchChallengeDashboard = () => {
     moodData.push({
       day: day,
       mood: existingDay ? existingDay.mood : null,
-      movingAvg: movingAvg,
-      forceUpdate: currentDay
+      movingAvg: movingAvg
     });
   }
   
-  // Принудительное обновление данных при изменении дня
-  const [forceRender, setForceRender] = React.useState(0);
-  const chartKey = `charts-${currentDay}-${forceRender}`; // Добавляем forceRender для полного пересоздания
+  // Принудительное обновление данных при изменении дня - ОТКЛЮЧЕНО
+  // const [forceRender, setForceRender] = React.useState(0);
+  // const chartKey = `charts-${currentDay}-${forceRender}`;
+  // 
+  // React.useEffect(() => {
+  //   setForceRender(prev => prev + 1);
+  // }, [currentDay]);
   
-  // Принудительно обновляем при изменении дня
-  React.useEffect(() => {
-    setForceRender(prev => prev + 1);
-  }, [currentDay]);
+  const chartKey = `charts-${currentDay}`;
   
   // Позиция для надписи рядом с последней точкой скользящей средней
   const lastDayWithData = currentDay; // день 10
@@ -249,7 +268,7 @@ const FrenchChallengeDashboard = () => {
       // React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "cumulative lessons completed"),
       React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 5, top: 5, bottom: 0 }, key: chartKey },
+          React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 10, top: 5, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
@@ -375,7 +394,7 @@ const FrenchChallengeDashboard = () => {
       ),
       React.createElement('div', { className: "h-36", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 5, top: 5, bottom: 0 }, key: chartKey },
+          React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 10, top: 5, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
@@ -409,6 +428,15 @@ const FrenchChallengeDashboard = () => {
             }),
             React.createElement(YAxis, { 
               domain: [0, 80],
+              ticks: [0, 30, 60, 80], // Задаем конкретные тики
+              tickFormatter: (value) => {
+                if (value === 0) return '0m';
+                if (value < 60) return `${value}m`;
+                const hours = Math.floor(value / 60);
+                const minutes = value % 60;
+                if (minutes === 0) return `${hours}h`;
+                return `${hours}h${minutes}m`;
+              },
               axisLine: false,
               fontSize: 12
             }),
@@ -426,7 +454,7 @@ const FrenchChallengeDashboard = () => {
       React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – Absolutely brilliant."),
       React.createElement('div', { className: "h-28 relative", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(LineChart, { data: moodData, margin: { left: 5, right: 5, top: 5, bottom: 5 }, key: chartKey },
+          React.createElement(LineChart, { data: moodData, margin: { left: 5, right: 10, top: 5, bottom: 5 }, key: chartKey },
             React.createElement('defs', null,
               React.createElement('linearGradient', { id: "moodGradient", x1: "0", y1: "0", x2: "0", y2: "1" },
                 React.createElement('stop', { offset: "0%", stopColor: "#3b82f6" }),

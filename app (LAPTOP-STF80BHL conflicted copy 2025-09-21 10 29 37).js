@@ -26,17 +26,6 @@ const FrenchChallengeDashboard = () => {
     { day: 10, completedLessons: "8,9,10", attemptedLessons: "", videoTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
   ];
 
-  // Фильтруем данные до текущего дня для эмулятора
-  const filteredTestData = testData.filter(day => day.day <= currentDayState);
-
-  // Функция для парсинга строки уроков из Google Sheets
-  const parseLessons = (lessonsString) => {
-    if (!lessonsString || lessonsString.trim() === '') return [];
-    return lessonsString.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-  };
-
-  const currentDay = currentDayState;
-
   // Обработчик клавиш для эмулятора
   React.useEffect(() => {
     const handleKeyPress = (event) => {
@@ -51,38 +40,24 @@ const FrenchChallengeDashboard = () => {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [currentDayState]);
 
-  // Обновляем выделение текущего дня при изменении
-  React.useEffect(() => {
-    setTimeout(() => {
-      // Находим все тексты осей
-      const allAxisTexts = document.querySelectorAll('.recharts-cartesian-axis-tick-value');
-      
-      // Сбрасываем все стили
-      allAxisTexts.forEach(text => {
-        text.style.fontWeight = 'normal';
-      });
-      
-      // Выделяем текущий день только на оси X
-      allAxisTexts.forEach(text => {
-        // Проверяем, что это ось X по родительскому элементу
-        const parent = text.closest('.recharts-cartesian-axis');
-        if (parent && parent.classList.contains('recharts-cartesian-axis-x')) {
-          if (text.textContent === currentDay.toString()) {
-            text.style.fontWeight = 'bold !important';
-            text.style.setProperty('font-weight', 'bold', 'important');
-          }
-        }
-      });
-    }, 100);
-  }, [currentDay]);
+  // Фильтруем данные до текущего дня для эмулятора
+  const filteredTestData = testData.filter(day => day.day <= currentDayState);
+
+  // Функция для парсинга строки уроков из Google Sheets
+  const parseLessons = (lessonsString) => {
+    if (!lessonsString || lessonsString.trim() === '') return [];
+    return lessonsString.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+  };
+
+  const currentDay = testData.length;
   
   // Рассчитываем общее количество завершенных уроков
-  const allCompletedLessons = filteredTestData.flatMap(day => parseLessons(day.completedLessons));
+  const allCompletedLessons = testData.flatMap(day => parseLessons(day.completedLessons));
   const completedLessons = allCompletedLessons.length;
   
   // Рассчитываем общее время (включая otherTime)
-  const totalTime = filteredTestData.reduce((sum, day) => sum + day.videoTime + day.homeworkTime + day.otherTime, 0);
-  const avgTime = Math.round(totalTime / filteredTestData.filter(d => (d.videoTime + d.homeworkTime + d.otherTime) > 0).length);
+  const totalTime = testData.reduce((sum, day) => sum + day.videoTime + day.homeworkTime + day.otherTime, 0);
+  const avgTime = Math.round(totalTime / testData.filter(d => (d.videoTime + d.homeworkTime + d.otherTime) > 0).length);
   
   // Прогноз уроков
   const currentLessonsPerDay = completedLessons / currentDay;
@@ -91,22 +66,20 @@ const FrenchChallengeDashboard = () => {
   // Заполняем данные для всех 90 дней с накопленным количеством уроков
   let cumulativeLessons = 0;
   for (let day = 1; day <= 90; day++) {
-    const existingDay = filteredTestData.find(d => d.day === day);
+    const existingDay = testData.find(d => d.day === day);
     if (existingDay) {
       const dayCompletedLessons = parseLessons(existingDay.completedLessons).length;
       cumulativeLessons += dayCompletedLessons;
       allData.push({ 
         day: day, 
         lessons: cumulativeLessons, 
-        dailyLessons: dayCompletedLessons, // количество уроков за день
-        forceUpdate: currentDay
+        dailyLessons: dayCompletedLessons // количество уроков за день
       });
     } else {
       allData.push({ 
         day: day, 
         lessons: cumulativeLessons, 
-        dailyLessons: 0, // нет уроков за день
-        forceUpdate: currentDay
+        dailyLessons: 0 // нет уроков за день
       });
     }
   }
@@ -114,13 +87,12 @@ const FrenchChallengeDashboard = () => {
   // Данные для графика времени (все 90 дней)
   const timeData = [];
   for (let day = 1; day <= 90; day++) {
-    const existingDay = filteredTestData.find(d => d.day === day);
+    const existingDay = testData.find(d => d.day === day);
     timeData.push({
       day: day,
       videoTime: existingDay ? existingDay.videoTime : 0,
       homeworkTime: existingDay ? existingDay.homeworkTime : 0,
-      otherTime: existingDay ? existingDay.otherTime : 0,
-      forceUpdate: currentDay
+      otherTime: existingDay ? existingDay.otherTime : 0
     });
   }
   
@@ -130,7 +102,7 @@ const FrenchChallengeDashboard = () => {
   let smoothedValue = null;
   
   for (let day = 1; day <= 90; day++) {
-    const existingDay = filteredTestData.find(d => d.day === day);
+    const existingDay = testData.find(d => d.day === day);
     let movingAvg = null;
     
     if (existingDay) {
@@ -148,19 +120,9 @@ const FrenchChallengeDashboard = () => {
     moodData.push({
       day: day,
       mood: existingDay ? existingDay.mood : null,
-      movingAvg: movingAvg,
-      forceUpdate: currentDay
+      movingAvg: movingAvg
     });
   }
-  
-  // Принудительное обновление данных при изменении дня
-  const [forceRender, setForceRender] = React.useState(0);
-  const chartKey = `charts-${currentDay}-${forceRender}`; // Добавляем forceRender для полного пересоздания
-  
-  // Принудительно обновляем при изменении дня
-  React.useEffect(() => {
-    setForceRender(prev => prev + 1);
-  }, [currentDay]);
   
   // Позиция для надписи рядом с последней точкой скользящей средней
   const lastDayWithData = currentDay; // день 10
@@ -181,8 +143,8 @@ const FrenchChallengeDashboard = () => {
 
   // Подсчет страйка (дни с активностью)
   let currentStreak = 0;
-  for (let i = filteredTestData.length - 1; i >= 0; i--) {
-    const day = filteredTestData[i];
+  for (let i = testData.length - 1; i >= 0; i--) {
+    const day = testData[i];
     const hasActivity = (day.videoTime + day.homeworkTime + day.otherTime) > 0 || 
                        parseLessons(day.completedLessons).length > 0 || 
                        parseLessons(day.attemptedLessons).length > 0;
@@ -198,7 +160,7 @@ const FrenchChallengeDashboard = () => {
     // Заголовок
     React.createElement('div', { className: "bg-data-categories-neutral text-black px-4 pt-4 pb-0 relative mb-0" },
       React.createElement('h1', { className: "text-3xl font-bold text-black" }, "French A2→B1"),
-        React.createElement('p', { className: "text-black text-base opacity-70" }, `90 days • 40 lessons • Day ${currentDay} (← → to navigate)`),
+      React.createElement('p', { className: "text-black text-base opacity-70" }, `90 days • 40 lessons • Day ${currentDay}`),
       React.createElement('div', { className: "absolute top-5 right-4 flex items-center gap-2" },
         React.createElement('div', { className: "w-2 h-2 bg-black rounded-full animate-pulse" }),
         React.createElement('span', { className: "text-sm text-black opacity-70" }, "updated today")
@@ -249,37 +211,14 @@ const FrenchChallengeDashboard = () => {
       // React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "cumulative lessons completed"),
       React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 5, top: 5, bottom: 0 }, key: chartKey },
+          React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 5, top: 5, bottom: 0 } },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
               domain: [0, 90],
-              allowDuplicatedCategory: true, // Разрешить дубликаты
-              interval: 0, // Показывать все тики
-              ticks: (() => {
-                const baseTicks = [1, 10, 30, 60, 90];
-                let ticks = [...baseTicks];
-                
-                // Добавляем текущий день если его нет в базовых тиках
-                if (!baseTicks.includes(currentDay)) {
-                  ticks.push(currentDay);
-                  ticks.sort((a, b) => a - b);
-                }
-                
-                return ticks;
-              })(),
-              tickFormatter: (value) => {
-                // Скрываем цифры базовых меток, которые слишком близко к текущему дню
-                const baseTicks = [1, 10, 30, 60, 90];
-                if (baseTicks.includes(value) && Math.abs(value - currentDay) < 2 && value !== currentDay) {
-                  return ''; // Скрываем цифру только если это НЕ текущий день
-                }
-                return value; // Показываем цифру
-              },
+              ticks: [1, 10, 30, 60, 90],
               tickLine: { stroke: '#000000', strokeWidth: 1 },
-              tick: { 
-                fontSize: 12
-              }
+              tick: { fontSize: 12 }
             }),
             React.createElement(YAxis, { 
               domain: [0, Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5],
@@ -307,8 +246,7 @@ const FrenchChallengeDashboard = () => {
               stroke: currentDay >= 4 ? "#3b82f6" : "transparent", 
               strokeWidth: 3,
               dot: false,
-              connectNulls: false,
-              data: currentDay >= 4 ? allData.filter(d => d.day <= currentDay) : []
+              connectNulls: false
             })
           )
         ),
@@ -375,37 +313,14 @@ const FrenchChallengeDashboard = () => {
       ),
       React.createElement('div', { className: "h-36", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 5, top: 5, bottom: 0 }, key: chartKey },
+          React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 5, top: 5, bottom: 0 } },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
               domain: [0, 90],
-              allowDuplicatedCategory: true, // Разрешить дубликаты
-              interval: 0, // Показывать все тики
-              ticks: (() => {
-                const baseTicks = [1, 10, 30, 60, 90];
-                let ticks = [...baseTicks];
-                
-                // Добавляем текущий день если его нет в базовых тиках
-                if (!baseTicks.includes(currentDay)) {
-                  ticks.push(currentDay);
-                  ticks.sort((a, b) => a - b);
-                }
-                
-                return ticks;
-              })(),
-              tickFormatter: (value) => {
-                // Скрываем цифры базовых меток, которые слишком близко к текущему дню
-                const baseTicks = [1, 10, 30, 60, 90];
-                if (baseTicks.includes(value) && Math.abs(value - currentDay) < 2 && value !== currentDay) {
-                  return ''; // Скрываем цифру только если это НЕ текущий день
-                }
-                return value; // Показываем цифру
-              },
+              ticks: [1, 10, 30, 60, 90],
               tickLine: { stroke: '#000000', strokeWidth: 1 },
-              tick: { 
-                fontSize: 12
-              }
+              tick: { fontSize: 12 }
             }),
             React.createElement(YAxis, { 
               domain: [0, 80],
@@ -426,7 +341,7 @@ const FrenchChallengeDashboard = () => {
       React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – Absolutely brilliant."),
       React.createElement('div', { className: "h-28 relative", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(LineChart, { data: moodData, margin: { left: 5, right: 5, top: 5, bottom: 5 }, key: chartKey },
+          React.createElement(LineChart, { data: moodData, margin: { left: 5, right: 5, top: 5, bottom: 5 } },
             React.createElement('defs', null,
               React.createElement('linearGradient', { id: "moodGradient", x1: "0", y1: "0", x2: "0", y2: "1" },
                 React.createElement('stop', { offset: "0%", stopColor: "#3b82f6" }),
@@ -438,32 +353,9 @@ const FrenchChallengeDashboard = () => {
               type: "number",
               dataKey: "day", 
               domain: [0, 90],
-              allowDuplicatedCategory: true, // Разрешить дубликаты
-              interval: 0, // Показывать все тики
-              ticks: (() => {
-                const baseTicks = [1, 10, 30, 60, 90];
-                let ticks = [...baseTicks];
-                
-                // Добавляем текущий день если его нет в базовых тиках
-                if (!baseTicks.includes(currentDay)) {
-                  ticks.push(currentDay);
-                  ticks.sort((a, b) => a - b);
-                }
-                
-                return ticks;
-              })(),
-              tickFormatter: (value) => {
-                // Скрываем цифры базовых меток, которые слишком близко к текущему дню
-                const baseTicks = [1, 10, 30, 60, 90];
-                if (baseTicks.includes(value) && Math.abs(value - currentDay) < 2 && value !== currentDay) {
-                  return ''; // Скрываем цифру только если это НЕ текущий день
-                }
-                return value; // Показываем цифру
-              },
+              ticks: [1, 10, 30, 60, 90],
               tickLine: { stroke: '#000000', strokeWidth: 1 },
-              tick: { 
-                fontSize: 12
-              }
+              tick: { fontSize: 12 }
             }),
             React.createElement(YAxis, { 
               domain: [1, 5],
@@ -478,14 +370,14 @@ const FrenchChallengeDashboard = () => {
               strokeWidth: 0,
               dot: { 
                 fill: currentDay >= 4 ? "#6b7280" : (() => {
-                  const moodValue = filteredTestData.find(d => d.day === currentDay)?.mood || 4;
+                  const moodValue = testData.find(d => d.day === currentDay)?.mood || 4;
                   if (moodValue <= 1) return '#ef4444';
                   if (moodValue >= 5) return '#3b82f6';
                   if (moodValue <= 3) return '#8b5cf6';
                   return '#3b82f6';
                 })(),
                 fillOpacity: currentDay >= 4 ? 0.5 : 1, 
-                r: currentDay >= 4 ? 3 : 4.5 
+                r: currentDay >= 4 ? 1.5 : 4.5 
               },
               connectNulls: false
             }),
@@ -493,7 +385,7 @@ const FrenchChallengeDashboard = () => {
               type: "monotone", 
               dataKey: "mood", 
               stroke: (() => {
-                const moodValue = filteredTestData.find(d => d.day === currentDay)?.mood || 4;
+                const moodValue = testData.find(d => d.day === currentDay)?.mood || 4;
                 if (moodValue <= 1) return '#ef4444';
                 if (moodValue >= 5) return '#3b82f6';
                 if (moodValue <= 3) return '#8b5cf6';
@@ -501,8 +393,7 @@ const FrenchChallengeDashboard = () => {
               })(),
               strokeWidth: 2,
               dot: false,
-              connectNulls: false,
-              data: filteredTestData.filter(d => d.day === currentDay)
+              connectNulls: false
             }) : null,
             React.createElement(Line, { 
               type: "monotone", 
@@ -565,9 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
       axisTexts.forEach(text => {
         text.style.fontSize = '12px';
         text.style.fill = '#000000';
-        text.style.fontWeight = 'normal';
       });
-
     }, 100);
   } else {
     document.getElementById('root').innerHTML = '<div style="padding: 20px; text-align: center; color: red;">Ошибка загрузки библиотек. Проверьте подключение к интернету.</div>';

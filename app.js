@@ -186,10 +186,10 @@ const FrenchChallengeDashboard = () => {
     ),
 
     // График уроков
-    React.createElement('div', { className: "px-4 mb-0" },
+    React.createElement('div', { className: "px-4 mb-4" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Lessons Progress"),
-      React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "cumulative lessons completed"),
-      React.createElement('div', { className: "h-40 relative", style: { marginTop: '10px' } },
+      // React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "cumulative lessons completed"),
+      React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 5, top: 5, bottom: 0 } },
             React.createElement(XAxis, { 
@@ -198,7 +198,7 @@ const FrenchChallengeDashboard = () => {
               domain: [0, 90],
               ticks: [1, 10, 30, 60, 90],
               tickLine: { stroke: '#000000', strokeWidth: 1 },
-              tick: { fontSize: 0, opacity: 0 }
+              tick: { fontSize: 12 }
             }),
             React.createElement(YAxis, { 
               domain: [0, Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5],
@@ -240,7 +240,16 @@ const FrenchChallengeDashboard = () => {
             zIndex: 10,
             transform: 'translateY(-50%)'
           }
-        }, "cumulative lessons")
+        }, "cumulative lessons"),
+        React.createElement('div', { 
+          className: "absolute text-xs text-gray-500", 
+          style: { 
+            left: `${25 + (1 / 90) * 80}%`, 
+            top: '93%',
+            transform: 'translateX(-50%)',
+            whiteSpace: 'nowrap'
+          }
+        }, "days from start →")
       )
     ),
 
@@ -282,7 +291,7 @@ const FrenchChallengeDashboard = () => {
           React.createElement('span', null, "Other")
         )
       ),
-      React.createElement('div', { className: "h-40", style: { marginTop: '10px' } },
+      React.createElement('div', { className: "h-36", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 5, top: 5, bottom: 0 } },
             React.createElement(XAxis, { 
@@ -291,7 +300,7 @@ const FrenchChallengeDashboard = () => {
               domain: [0, 90],
               ticks: [1, 10, 30, 60, 90],
               tickLine: { stroke: '#000000', strokeWidth: 1 },
-              tick: { fontSize: 0, opacity: 0 }
+              tick: { fontSize: 12 }
             }),
             React.createElement(YAxis, { 
               domain: [0, 80],
@@ -325,6 +334,7 @@ const FrenchChallengeDashboard = () => {
               dataKey: "day", 
               domain: [0, 90],
               ticks: [1, 10, 30, 60, 90],
+              tickLine: { stroke: '#000000', strokeWidth: 1 },
               tick: { fontSize: 12 }
             }),
             React.createElement(YAxis, { 
@@ -367,18 +377,16 @@ const FrenchChallengeDashboard = () => {
 
     // Подвал
     React.createElement('div', { className: "px-4 py-3 text-left border-t border-gray-200" },
-        React.createElement('div', { className: "text-xs text-gray-500" },
-        React.createElement('div', null, "Vibecoded via Claude and Cursor"),
-        React.createElement('div', null, "Started at 22 Sept, 2025. Aleksandr Bogachev"),
-        React.createElement('div', { className: "flex items-center gap-1" },
-          React.createElement('span', { className: "text-gray-500" }, "𝕏"),
-          React.createElement('a', { 
-            href: "https://x.com/bogachev_al", 
-            target: "_blank", 
-            rel: "noopener noreferrer",
-            className: "text-gray-500 hover:text-gray-700 underline"
-          }, "bogachev_al")
-        )
+      React.createElement('div', { className: "text-xs text-gray-500" },
+        React.createElement('span', null, "Vibecoded via Claude and Cursor • Started at 22 Sept, 2025 • Aleksandr Bogachev • "),
+        React.createElement('span', { className: "text-gray-500" }, "𝕏"),
+        React.createElement('span', null, " "),
+        React.createElement('a', { 
+          href: "https://x.com/bogachev_al", 
+          target: "_blank", 
+          rel: "noopener noreferrer",
+          className: "text-gray-500 hover:text-gray-700 underline"
+        }, "bogachev_al")
       )
     )
   );

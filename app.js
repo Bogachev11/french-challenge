@@ -9,54 +9,134 @@ if (typeof Recharts === 'undefined') {
 const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, ComposedChart } = Recharts;
 
 const FrenchChallengeDashboard = () => {
-  // Состояние для эмулятора - ОТКЛЮЧЕНО
-  // const [currentDayState, setCurrentDayState] = React.useState(1);
+  // Состояние для данных из Google Sheets
+  const [sheetData, setSheetData] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
   
-  // Данные из Google Sheets (CSV формат) - полные данные для эмулятора
-  const testData = [
-    { day: 1, completedLessons: "1", attemptedLessons: "", videoTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
-    { day: 2, completedLessons: "2", attemptedLessons: "3", videoTime: 20, homeworkTime: 12, otherTime: 0, mood: 4 },
-    { day: 3, completedLessons: "3", attemptedLessons: "", videoTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
-    { day: 4, completedLessons: "", attemptedLessons: "5,6", videoTime: 40, homeworkTime: 0, otherTime: 0, mood: 2 },
-    { day: 5, completedLessons: "4,5", attemptedLessons: "", videoTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
-    { day: 6, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 }, // пропущенный день
-    { day: 7, completedLessons: "6", attemptedLessons: "", videoTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
-    { day: 8, completedLessons: "7", attemptedLessons: "", videoTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
-    { day: 9, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
-    { day: 10, completedLessons: "8,9,10", attemptedLessons: "", videoTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
-  ];
-
-  // Фильтруем данные до текущего дня для эмулятора - ОТКЛЮЧЕНО
-  // const filteredTestData = testData.filter(day => day.day <= currentDayState);
+  // Google Sheets API настройки
+  const SHEET_ID = '1h-5h_20vKLjIq9t0YlFf5BvPDMOaKURfbzZuNSyTyZ4';
+  const API_KEY = 'AIzaSyBOewv068qAmujAaU5du_-VqAfqzzjkgGM';
+  const RANGE = '90_days_list!A2:H'; // Данные начиная с 2 строки (без заголовков) с листа "90_days_list"
   
-  // Используем все данные (последний день)
-  const filteredTestData = testData;
-
-  // Функция для парсинга строки уроков из Google Sheets
-  const parseLessons = (lessonsString) => {
-    if (!lessonsString || lessonsString.trim() === '') return [];
-    return lessonsString.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-  };
-
-  // Текущий день - последний день из данных
-  const currentDay = testData[testData.length - 1].day;
-
-  // Обработчик клавиш для эмулятора - ОТКЛЮЧЕН
-  // React.useEffect(() => {
-  //   const handleKeyPress = (event) => {
-  //     if (event.key === 'ArrowLeft' && currentDayState > 1) {
-  //       setCurrentDayState(currentDayState - 1);
-  //     } else if (event.key === 'ArrowRight' && currentDayState < 10) {
-  //       setCurrentDayState(currentDayState + 1);
-  //     }
-  //   };
-  //   
-  //   window.addEventListener('keydown', handleKeyPress);
-  //   return () => window.removeEventListener('keydown', handleKeyPress);
-  // }, [currentDayState]);
-
+  // Загружаем данные из Google Sheets (альтернативный метод через CSV)
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Пробуем сначала через CSV (публичный доступ) - лист "90_days_list"
+        const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&range=90_days_list`;
+        console.log('Trying CSV method:', csvUrl);
+        
+        const response = await fetch(csvUrl);
+        
+        if (!response.ok) {
+          throw new Error(`CSV fetch failed: ${response.status}`);
+        }
+        
+        const csvText = await response.text();
+        console.log('CSV data:', csvText);
+        
+        // Парсим CSV
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+        console.log('Headers:', headers);
+        
+        const formattedData = lines.slice(1) // Пропускаем заголовки
+          .filter(line => line.trim()) // Убираем пустые строки
+          .map((line, index) => {
+            const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+            console.log(`Row ${index + 1}:`, values);
+            
+            return {
+              day: parseInt(values[1]) || (index + 1), // Day (колонка B)
+              completedLessons: values[2] || '', // Completed_Lessons (колонка C)
+              attemptedLessons: values[3] || '', // Attempted_Lessons (колонка D)
+              videoTime: parseInt(values[4]) || 0, // Video_Time (колонка E)
+              homeworkTime: parseInt(values[5]) || 0, // Homework_Time (колонка F)
+              otherTime: parseInt(values[6]) || 0, // Other_Time (колонка G)
+              mood: parseInt(values[7]) || null // Mood (колонка H)
+            };
+          })
+          .filter(row => row.day); // Фильтруем строки без дня
+        
+        console.log('Formatted data:', formattedData);
+        setSheetData(formattedData);
+        setError(null);
+        
+      } catch (csvError) {
+        console.log('CSV method failed, trying API method:', csvError);
+        
+        // Fallback к API методу
+        try {
+          const response = await fetch(
+            `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`,
+            {
+              method: 'GET',
+              headers: {
+                'Accept': 'application/json',
+              }
+            }
+          );
+          
+          if (!response.ok) {
+            throw new Error(`API fetch failed: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          console.log('API data:', data);
+          
+          const formattedData = data.values
+            .filter(row => row.length >= 2 && row[1])
+            .map((row, index) => ({
+              day: parseInt(row[1]) || (index + 1),
+              completedLessons: row[2] || '',
+              attemptedLessons: row[3] || '',
+              videoTime: parseInt(row[4]) || 0,
+              homeworkTime: parseInt(row[5]) || 0,
+              otherTime: parseInt(row[6]) || 0,
+              mood: parseInt(row[7]) || null
+            }));
+          
+          setSheetData(formattedData);
+          setError(null);
+          
+        } catch (apiError) {
+          console.error('Both methods failed:', apiError);
+          setError(`Ошибка загрузки: ${apiError.message}`);
+          // Fallback к тестовым данным
+          setSheetData([
+            { day: 1, completedLessons: "1", attemptedLessons: "", videoTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
+            { day: 2, completedLessons: "2", attemptedLessons: "3", videoTime: 20, homeworkTime: 12, otherTime: 0, mood: 4 },
+            { day: 3, completedLessons: "3", attemptedLessons: "", videoTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
+            { day: 4, completedLessons: "", attemptedLessons: "5,6", videoTime: 40, homeworkTime: 0, otherTime: 0, mood: 2 },
+            { day: 5, completedLessons: "4,5", attemptedLessons: "", videoTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
+            { day: 6, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
+            { day: 7, completedLessons: "6", attemptedLessons: "", videoTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
+            { day: 8, completedLessons: "7", attemptedLessons: "", videoTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
+            { day: 9, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
+            { day: 10, completedLessons: "8,9,10", attemptedLessons: "", videoTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
+          ]);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
+  
+  // Используем данные из Google Sheets
+  const testData = sheetData;
+  
+  // Текущий день - последний день из данных (определяем после получения данных)
+  const currentDay = testData.length > 0 ? testData[testData.length - 1].day : 1;
+  
   // Обновляем выделение текущего дня при изменении
   React.useEffect(() => {
+    if (testData.length === 0) return; // Не выполняем если нет данных
+    
     setTimeout(() => {
       // Находим все тексты осей
       const allAxisTexts = document.querySelectorAll('.recharts-cartesian-axis-tick-value');
@@ -78,10 +158,12 @@ const FrenchChallengeDashboard = () => {
         }
       });
     }, 100);
-  }, [currentDay]);
+  }, [currentDay, testData.length]);
   
   // Исправляем позиционирование верхних лейблов осей Y
   React.useEffect(() => {
+    if (testData.length === 0) return; // Не выполняем если нет данных
+    
     setTimeout(() => {
       // Находим все лейблы осей Y
       const yAxisLabels = document.querySelectorAll('.recharts-cartesian-axis-y .recharts-cartesian-axis-tick-value');
@@ -96,8 +178,68 @@ const FrenchChallengeDashboard = () => {
         }
       });
     }, 100);
-  }, [currentDay]);
+  }, [currentDay, testData.length]);
   
+  // Показываем индикатор загрузки
+  if (loading) {
+    return React.createElement('div', { className: "max-w-md mx-auto bg-white min-h-screen flex items-center justify-center" },
+      React.createElement('div', { className: "text-center" },
+        React.createElement('div', { className: "animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4" }),
+        React.createElement('p', { className: "text-gray-600" }, "Загрузка данных из Google Sheets...")
+      )
+    );
+  }
+  
+  // Показываем ошибку если есть
+  if (error) {
+    return React.createElement('div', { className: "max-w-md mx-auto bg-white min-h-screen flex items-center justify-center" },
+      React.createElement('div', { className: "text-center p-4" },
+        React.createElement('div', { className: "text-red-500 text-6xl mb-4" }, "⚠️"),
+        React.createElement('h2', { className: "text-xl font-bold text-gray-800 mb-2" }, "Ошибка загрузки"),
+        React.createElement('p', { className: "text-gray-600 mb-4" }, error),
+        React.createElement('p', { className: "text-sm text-gray-500" }, "Используются тестовые данные")
+      )
+    );
+  }
+  
+  // Если нет данных
+  if (testData.length === 0) {
+    return React.createElement('div', { className: "max-w-md mx-auto bg-white min-h-screen flex items-center justify-center" },
+      React.createElement('div', { className: "text-center p-4" },
+        React.createElement('div', { className: "text-gray-400 text-6xl mb-4" }, "📊"),
+        React.createElement('h2', { className: "text-xl font-bold text-gray-800 mb-2" }, "Нет данных"),
+        React.createElement('p', { className: "text-gray-600" }, "Данные не найдены в Google Sheets")
+      )
+    );
+  }
+  
+  // Фильтруем данные до текущего дня для эмулятора - ОТКЛЮЧЕНО
+  // const filteredTestData = testData.filter(day => day.day <= currentDayState);
+  
+  // Используем все данные (последний день)
+  const filteredTestData = testData;
+
+  // Функция для парсинга строки уроков из Google Sheets
+  const parseLessons = (lessonsString) => {
+    if (!lessonsString || lessonsString.trim() === '') return [];
+    return lessonsString.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+  };
+
+
+  // Обработчик клавиш для эмулятора - ОТКЛЮЧЕН
+  // React.useEffect(() => {
+  //   const handleKeyPress = (event) => {
+  //     if (event.key === 'ArrowLeft' && currentDayState > 1) {
+  //       setCurrentDayState(currentDayState - 1);
+  //     } else if (event.key === 'ArrowRight' && currentDayState < 10) {
+  //       setCurrentDayState(currentDayState + 1);
+  //     }
+  //   };
+  //   
+  //   window.addEventListener('keydown', handleKeyPress);
+  //   return () => window.removeEventListener('keydown', handleKeyPress);
+  // }, [currentDayState]);
+
   // Рассчитываем общее количество завершенных уроков
   const allCompletedLessons = filteredTestData.flatMap(day => parseLessons(day.completedLessons));
   const completedLessons = allCompletedLessons.length;

@@ -217,9 +217,9 @@ const FrenchChallengeDashboard = () => {
     // Заголовок
     React.createElement('div', { className: "bg-data-categories-neutral text-black px-4 pt-4 pb-0 relative mb-0" },
       React.createElement('h1', { className: "text-3xl font-bold text-black" }, "French A2→B1"),
-        React.createElement('p', { className: "text-black text-base opacity-70" }, `90 days • 40 lessons • Day ${currentDay} (← → to navigate)`),
-      React.createElement('div', { className: "absolute top-5 right-4 flex items-center gap-2" },
-        React.createElement('div', { className: "w-2 h-2 bg-black rounded-full animate-pulse" }),
+        React.createElement('p', { className: "text-black text-base opacity-70" }, `90 days • 40 lessons • Day ${currentDay}`),
+        React.createElement('div', { className: "absolute top-5 right-4 flex items-center gap-2" },
+          React.createElement('div', { className: "w-2 h-2 bg-blue-500 rounded-full animate-pulse" }),
         React.createElement('span', { className: "text-sm text-black opacity-70" }, "updated today")
       )
     ),

@@ -378,7 +378,7 @@ const FrenchChallengeDashboard = () => {
       // React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "cumulative lessons completed"),
       React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 10, top: 5, bottom: 0 }, key: chartKey },
+          React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
@@ -504,7 +504,7 @@ const FrenchChallengeDashboard = () => {
       ),
       React.createElement('div', { className: "h-36", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 10, top: 5, bottom: 0 }, key: chartKey },
+          React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
@@ -564,7 +564,7 @@ const FrenchChallengeDashboard = () => {
       React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – Absolutely brilliant."),
       React.createElement('div', { className: "h-28 relative", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(LineChart, { data: moodData, margin: { left: 5, right: 10, top: 5, bottom: 5 }, key: chartKey },
+          React.createElement(LineChart, { data: moodData, margin: { left: 5, right: 10, top: 9, bottom: 5 }, key: chartKey },
             React.createElement('defs', null,
               React.createElement('linearGradient', { id: "moodGradient", x1: "0", y1: "0", x2: "0", y2: "1" },
                 React.createElement('stop', { offset: "0%", stopColor: "#3b82f6" }),

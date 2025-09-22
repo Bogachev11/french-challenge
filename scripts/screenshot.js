@@ -31,10 +31,21 @@ async function takeScreenshot() {
         timeout: 30000
       });
       
-      // Ждем загрузки графиков с более мягким условием
+      // Ждем загрузки графиков и данных
       try {
         await page.waitForSelector('.recharts-cartesian-axis', { timeout: 15000 });
-        console.log('✅ Графики загружены');
+        console.log('✅ Графики найдены');
+        
+        // Дополнительно ждем загрузки данных в графиках
+        await page.waitForFunction(() => {
+          const charts = document.querySelectorAll('.recharts-cartesian-axis-tick-value');
+          return charts.length > 0;
+        }, { timeout: 10000 });
+        console.log('✅ Данные в графиках загружены');
+        
+        // Ждем еще немного для полной отрисовки и анимации
+        await page.waitForTimeout(5000);
+        console.log('✅ Графики полностью готовы');
       } catch (e) {
         console.log('⚠️ Графики не найдены, но продолжаем...');
       }
@@ -66,12 +77,23 @@ async function takeScreenshot() {
   
   console.log(`📸 Делаем скриншот: ${screenshotPath}`);
   
-  // Делаем скриншот
-  await page.screenshot({
-    path: screenshotPath,
-    fullPage: true,
-    type: 'png'
-  });
+  // Находим основной контейнер дашборда
+  const dashboardElement = await page.$('div.max-w-md.mx-auto.bg-white.min-h-screen.border.border-gray-300.px-1');
+  
+  if (dashboardElement) {
+    console.log('📸 Делаем скриншот основного контейнера...');
+    await dashboardElement.screenshot({
+      path: screenshotPath,
+      type: 'png'
+    });
+  } else {
+    console.log('⚠️ Основной контейнер не найден, делаем скриншот всей страницы...');
+    await page.screenshot({
+      path: screenshotPath,
+      fullPage: true,
+      type: 'png'
+    });
+  }
   
   await browser.close();
   

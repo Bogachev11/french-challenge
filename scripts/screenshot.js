@@ -21,14 +21,38 @@ async function takeScreenshot() {
   
   console.log('📊 Загружаем дашборд...');
   
-  // Загружаем страницу
-  await page.goto('https://bogachev11.github.io/french-challenge', {
-    waitUntil: 'networkidle0',
-    timeout: 60000
-  });
+  // Пробуем загрузить страницу с несколькими попытками
+  let loaded = false;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      console.log(`Попытка ${attempt}/3...`);
+      await page.goto('https://bogachev11.github.io/french-challenge', {
+        waitUntil: 'domcontentloaded', // Менее строгое ожидание
+        timeout: 30000
+      });
+      
+      // Ждем загрузки графиков с более мягким условием
+      try {
+        await page.waitForSelector('.recharts-cartesian-axis', { timeout: 15000 });
+        console.log('✅ Графики загружены');
+      } catch (e) {
+        console.log('⚠️ Графики не найдены, но продолжаем...');
+      }
+      
+      loaded = true;
+      break;
+    } catch (error) {
+      console.log(`❌ Попытка ${attempt} не удалась:`, error.message);
+      if (attempt < 3) {
+        console.log('⏳ Ждем 5 секунд перед следующей попыткой...');
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+    }
+  }
   
-  // Ждем загрузки графиков
-  await page.waitForSelector('.recharts-cartesian-axis', { timeout: 30000 });
+  if (!loaded) {
+    throw new Error('Не удалось загрузить страницу после 3 попыток');
+  }
   
   // Создаем папку для скриншотов
   const screenshotsDir = path.join(__dirname, '..', 'screenshots');

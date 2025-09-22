@@ -541,8 +541,15 @@ const FrenchChallengeDashboard = () => {
               }
             }),
             React.createElement(YAxis, { 
-              domain: [0, 80],
-              ticks: [0, 30, 60, 80], // Задаем конкретные тики
+              domain: [0, Math.ceil(Math.max(...timeData.map(d => d.totalTime)) / 30) * 30],
+              ticks: (() => {
+                const max = Math.ceil(Math.max(...timeData.map(d => d.totalTime)) / 30) * 30;
+                const ticks = [];
+                for (let i = 0; i <= max; i += 30) {
+                  ticks.push(i);
+                }
+                return ticks;
+              })(),
               tickFormatter: (value) => {
                 if (value === 0) return '0\u202Fm';
                 if (value < 60) return `${value}\u202Fm`;

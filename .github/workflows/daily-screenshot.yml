@@ -2,8 +2,8 @@ name: Daily Dashboard Screenshot
 
 on:
   schedule:
-    # Запускается каждый день в 20:00 UTC (23:00 по Москве)
-    - cron: '0 20 * * *'
+    # ТЕСТ: Запускается каждый день в 8:30 UTC (9:30 по Парижу)
+    - cron: '30 8 * * *'
   workflow_dispatch: # Позволяет запускать вручную
 
 jobs:

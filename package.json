@@ -22,7 +22,7 @@
   "license": "MIT",
   "devDependencies": {
     "gh-pages": "^6.1.1",
-    "puppeteer": "^21.0.0"
+    "puppeteer": "^21.11.0"
   },
   "homepage": "https://bogachev11.github.io/french-challenge",
   "repository": {

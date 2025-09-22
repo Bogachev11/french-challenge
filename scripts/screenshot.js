@@ -24,11 +24,11 @@ async function takeScreenshot() {
   // Загружаем страницу
   await page.goto('https://bogachev11.github.io/french-challenge', {
     waitUntil: 'networkidle0',
-    timeout: 30000
+    timeout: 60000
   });
   
   // Ждем загрузки графиков
-  await page.waitForSelector('.recharts-cartesian-axis', { timeout: 10000 });
+  await page.waitForSelector('.recharts-cartesian-axis', { timeout: 30000 });
   
   // Создаем папку для скриншотов
   const screenshotsDir = path.join(__dirname, '..', 'screenshots');

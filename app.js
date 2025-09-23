@@ -190,7 +190,11 @@ const FrenchChallengeDashboard = () => {
   // Функция для парсинга строки уроков из Google Sheets
   const parseLessons = (lessonsString) => {
     if (!lessonsString || lessonsString.trim() === '') return [];
-    return lessonsString.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+    // В таблице "0" означает отсутствие уроков. Игнорируем все значения \<= 0.
+    return lessonsString
+      .split(',')
+      .map(id => parseInt(id.trim()))
+      .filter(id => !isNaN(id) && id > 0);
   };
 
 
@@ -380,7 +384,7 @@ const FrenchChallengeDashboard = () => {
     React.createElement('div', { className: "px-4 mb-4" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Lessons Progress"),
       // React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "cumulative lessons completed"),
-      React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px' } },
+      React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px', height: 'calc(9rem * 0.85)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 
@@ -506,7 +510,7 @@ const FrenchChallengeDashboard = () => {
           React.createElement('span', null, "Other")
         )
       ),
-      React.createElement('div', { className: "h-36", style: { marginTop: '10px' } },
+      React.createElement('div', { className: "h-36", style: { marginTop: '10px', height: 'calc(9rem * 0.85)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 

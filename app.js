@@ -53,7 +53,7 @@ const FrenchChallengeDashboard = () => {
               day: parseInt(values[1]) || (index + 1), // Day (колонка B)
               completedLessons: values[2] || '', // Completed_Lessons (колонка C)
               attemptedLessons: values[3] || '', // Attempted_Lessons (колонка D)
-              videoTime: parseInt(values[4]) || 0, // Video_Time (колонка E)
+              theoryTime: parseInt(values[4]) || 0, // Theory_Time (колонка E)
               homeworkTime: parseInt(values[5]) || 0, // Homework_Time (колонка F)
               otherTime: parseInt(values[6]) || 0, // Other_Time (колонка G)
               mood: parseInt(values[7]) || null // Mood (колонка H)
@@ -93,7 +93,7 @@ const FrenchChallengeDashboard = () => {
               day: parseInt(row[1]) || (index + 1),
               completedLessons: row[2] || '',
               attemptedLessons: row[3] || '',
-              videoTime: parseInt(row[4]) || 0,
+              theoryTime: parseInt(row[4]) || 0,
               homeworkTime: parseInt(row[5]) || 0,
               otherTime: parseInt(row[6]) || 0,
               mood: parseInt(row[7]) || null
@@ -107,16 +107,16 @@ const FrenchChallengeDashboard = () => {
           setError(`Loading error: ${apiError.message}`);
           // Fallback к тестовым данным
           setSheetData([
-            { day: 1, completedLessons: "1", attemptedLessons: "", videoTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
-            { day: 2, completedLessons: "2", attemptedLessons: "3", videoTime: 20, homeworkTime: 12, otherTime: 0, mood: 4 },
-            { day: 3, completedLessons: "3", attemptedLessons: "", videoTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
-            { day: 4, completedLessons: "", attemptedLessons: "5,6", videoTime: 40, homeworkTime: 0, otherTime: 0, mood: 2 },
-            { day: 5, completedLessons: "4,5", attemptedLessons: "", videoTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
-            { day: 6, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
-            { day: 7, completedLessons: "6", attemptedLessons: "", videoTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
-            { day: 8, completedLessons: "7", attemptedLessons: "", videoTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
-            { day: 9, completedLessons: "", attemptedLessons: "", videoTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
-            { day: 10, completedLessons: "8,9,10", attemptedLessons: "", videoTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
+            { day: 1, completedLessons: "1", attemptedLessons: "", theoryTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
+            { day: 2, completedLessons: "2", attemptedLessons: "3", theoryTime: 20, homeworkTime: 12, otherTime: 0, mood: 4 },
+            { day: 3, completedLessons: "3", attemptedLessons: "", theoryTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
+            { day: 4, completedLessons: "", attemptedLessons: "5,6", theoryTime: 40, homeworkTime: 0, otherTime: 0, mood: 2 },
+            { day: 5, completedLessons: "4,5", attemptedLessons: "", theoryTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
+            { day: 6, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
+            { day: 7, completedLessons: "6", attemptedLessons: "", theoryTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
+            { day: 8, completedLessons: "7", attemptedLessons: "", theoryTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
+            { day: 9, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
+            { day: 10, completedLessons: "8,9,10", attemptedLessons: "", theoryTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
           ]);
         }
       } finally {
@@ -217,8 +217,8 @@ const FrenchChallengeDashboard = () => {
   const completedLessons = allCompletedLessons.length;
   
   // Рассчитываем общее время (включая otherTime)
-  const totalTime = filteredTestData.reduce((sum, day) => sum + day.videoTime + day.homeworkTime + day.otherTime, 0);
-  const avgTime = Math.round(totalTime / filteredTestData.filter(d => (d.videoTime + d.homeworkTime + d.otherTime) > 0).length);
+  const totalTime = filteredTestData.reduce((sum, day) => sum + day.theoryTime + day.homeworkTime + day.otherTime, 0);
+  const avgTime = Math.round(totalTime / filteredTestData.filter(d => (d.theoryTime + d.homeworkTime + d.otherTime) > 0).length);
   
   // Прогноз уроков
   const currentLessonsPerDay = completedLessons / displayCurrentDay;
@@ -251,7 +251,7 @@ const FrenchChallengeDashboard = () => {
     const existingDay = filteredTestData.find(d => d.day === day);
     timeData.push({
       day: day,
-      videoTime: existingDay ? existingDay.videoTime : 0,
+      theoryTime: existingDay ? existingDay.theoryTime : 0,
       homeworkTime: existingDay ? existingDay.homeworkTime : 0,
       otherTime: existingDay ? existingDay.otherTime : 0
     });
@@ -316,7 +316,7 @@ const FrenchChallengeDashboard = () => {
   let currentStreak = 0;
   for (let i = filteredTestData.length - 1; i >= 0; i--) {
     const day = filteredTestData[i];
-    const hasActivity = (day.videoTime + day.homeworkTime + day.otherTime) > 0 || 
+    const hasActivity = (day.theoryTime + day.homeworkTime + day.otherTime) > 0 || 
                        parseLessons(day.completedLessons).length > 0 || 
                        parseLessons(day.attemptedLessons).length > 0;
     
@@ -441,18 +441,18 @@ const FrenchChallengeDashboard = () => {
             React.createElement(Line, { 
               type: "step", 
               dataKey: "lessons", 
-              stroke: displayCurrentDay >= 4 ? "#3b82f6" : "transparent", 
+              stroke: displayCurrentDay >= 7 ? "#3b82f6" : "transparent", 
               strokeWidth: 3,
               dot: false,
               connectNulls: false,
-              data: displayCurrentDay >= 4 ? allData.filter(d => d.day <= displayCurrentDay) : []
+              data: displayCurrentDay >= 7 ? allData.filter(d => d.day <= displayCurrentDay) : []
             })
           )
         ),
-        displayCurrentDay >= 4 ? React.createElement('div', { 
+        displayCurrentDay >= 7 ? React.createElement('div', { 
           className: "absolute text-sm font-bold pointer-events-auto", 
           style: { 
-            left: `${15 + (currentDay / 90) * 80}%`, 
+            left: `${15 + (displayCurrentDay / 90) * 80}%`, 
             top: `${(Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5 - completedLessons) / (Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5) * 70 + 1}%`, 
             color: '#3b82f6',
             whiteSpace: 'nowrap',
@@ -485,7 +485,7 @@ const FrenchChallengeDashboard = () => {
               borderRadius: '50%'
             } 
           }),
-          React.createElement('span', null, "Video")
+          React.createElement('span', null, "Theory")
         ),
         React.createElement('div', { className: "flex items-center gap-1" },
           React.createElement('div', { 
@@ -565,7 +565,7 @@ const FrenchChallengeDashboard = () => {
               axisLine: false,
               fontSize: 12
             }),
-            React.createElement(Bar, { dataKey: "videoTime", stackId: "time", fill: "#03a9f4" }),
+            React.createElement(Bar, { dataKey: "theoryTime", stackId: "time", fill: "#03a9f4" }),
             React.createElement(Bar, { dataKey: "homeworkTime", stackId: "time", fill: "#673ab7" }),
             React.createElement(Bar, { dataKey: "otherTime", stackId: "time", fill: "#9ca3af" })
           )
@@ -630,19 +630,19 @@ const FrenchChallengeDashboard = () => {
               stroke: "transparent",
               strokeWidth: 0,
               dot: { 
-                fill: displayCurrentDay >= 4 ? "#6b7280" : (() => {
+                fill: displayCurrentDay >= 7 ? "#6b7280" : (() => {
                   const moodValue = filteredTestData.find(d => d.day === displayCurrentDay)?.mood || 4;
                   if (moodValue <= 1) return '#ef4444';
                   if (moodValue >= 5) return '#3b82f6';
                   if (moodValue <= 3) return '#8b5cf6';
                   return '#3b82f6';
                 })(),
-                fillOpacity: displayCurrentDay >= 4 ? 0.5 : 1, 
-                r: displayCurrentDay >= 4 ? 3 : 4.5 
+                fillOpacity: displayCurrentDay >= 7 ? 0.5 : 1, 
+                r: displayCurrentDay >= 7 ? 3 : 4.5 
               },
               connectNulls: false
             }),
-            displayCurrentDay < 4 ? React.createElement(Line, { 
+            displayCurrentDay < 7 ? React.createElement(Line, { 
               type: "monotone", 
               dataKey: "mood", 
               stroke: (() => {
@@ -660,14 +660,14 @@ const FrenchChallengeDashboard = () => {
             React.createElement(Line, { 
               type: "monotone", 
               dataKey: "movingAvg", 
-              stroke: displayCurrentDay >= 4 ? "url(#moodGradient)" : "transparent", 
+              stroke: displayCurrentDay >= 7 ? "url(#moodGradient)" : "transparent", 
               strokeWidth: 4,
               dot: false,
               connectNulls: false
             })
           )
         ),
-        displayCurrentDay >= 4 ? React.createElement('div', { 
+        displayCurrentDay >= 7 ? React.createElement('div', { 
           className: "absolute text-sm font-bold pointer-events-auto", 
           style: { 
             left: labelXPosition, 

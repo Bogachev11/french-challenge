@@ -30,7 +30,7 @@ const MoodDot = (props) => {
     cy: cy,
     r: 3,
     fill: color,
-    fillOpacity: 0.5
+    fillOpacity: 0.3
   });
 };
 
@@ -696,7 +696,8 @@ const FrenchChallengeDashboard = () => {
               strokeWidth: 0,
               dot: MoodDot,
               connectNulls: false,
-              zIndex: 10
+              zIndex: 10,
+              isAnimationActive: false
             }),
             React.createElement(Line, { 
               type: "monotone", 

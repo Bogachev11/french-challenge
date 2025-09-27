@@ -58,6 +58,29 @@ const LessonDots = (props) => {
   return React.createElement('g', null, ...dots);
 };
 
+// Кастомный компонент для выделения текущего дня на оси X
+const CustomXAxisTick = (props) => {
+  const { x, y, payload, currentDay, hideLabels } = props;
+  const isCurrentDay = payload.value === currentDay;
+  
+  // Если нужно скрыть labels, возвращаем пустой элемент
+  if (hideLabels) {
+    return React.createElement('g', { transform: `translate(${x},${y})` });
+  }
+  
+  return React.createElement('g', { transform: `translate(${x},${y})` },
+    React.createElement('text', {
+      x: 0,
+      y: 0,
+      dy: 10,
+      textAnchor: "middle",
+      fill: isCurrentDay ? '#000000' : '#666666',
+      fontWeight: isCurrentDay ? 'bold' : 'normal',
+      fontSize: 12
+    }, payload.value)
+  );
+};
+
 const FrenchChallengeDashboard = () => {
   // State for Google Sheets data
   const [sheetData, setSheetData] = React.useState([]);
@@ -431,9 +454,7 @@ const FrenchChallengeDashboard = () => {
                 return ''; // Скрываем все labels
               },
               tickLine: { stroke: '#000000', strokeWidth: 1 },
-              tick: { 
-                fontSize: 12
-              }
+              tick: (props) => React.createElement(CustomXAxisTick, { ...props, currentDay: displayCurrentDay, hideLabels: true })
             }),
             React.createElement(YAxis, { 
               domain: [0, 40],
@@ -482,9 +503,7 @@ const FrenchChallengeDashboard = () => {
                 return value;
               },
               tickLine: { stroke: '#000000', strokeWidth: 1 },
-              tick: { 
-                fontSize: 12
-              }
+              tick: (props) => React.createElement(CustomXAxisTick, { ...props, currentDay: displayCurrentDay })
             }),
             React.createElement(YAxis, { 
               domain: [0, Math.ceil(Math.max(...allData.map(d => d.dailyLessons)))],
@@ -588,9 +607,7 @@ const FrenchChallengeDashboard = () => {
                 return value; // Показываем цифру
               },
               tickLine: { stroke: '#000000', strokeWidth: 1 },
-              tick: { 
-                fontSize: 12
-              }
+              tick: (props) => React.createElement(CustomXAxisTick, { ...props, currentDay: displayCurrentDay })
             }),
             React.createElement(YAxis, { 
               domain: [0, Math.ceil(Math.max(...timeData.map(d => d.totalTime)) / 30) * 30],
@@ -662,9 +679,7 @@ const FrenchChallengeDashboard = () => {
                 return value; // Показываем цифру
               },
               tickLine: { stroke: '#000000', strokeWidth: 1 },
-              tick: { 
-                fontSize: 12
-              }
+              tick: (props) => React.createElement(CustomXAxisTick, { ...props, currentDay: displayCurrentDay })
             }),
             React.createElement(YAxis, { 
               domain: [1, 5],

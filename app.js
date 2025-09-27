@@ -524,8 +524,8 @@ const FrenchChallengeDashboard = () => {
               dataKey: "dailyLessons", 
               fill: "#9ca3af", 
               fillOpacity: 0.8,
-              stroke: "#9ca3af",
-              strokeWidth: 1
+              stroke: "transparent",
+              strokeWidth: 0
             })
           )
         ),

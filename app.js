@@ -292,15 +292,17 @@ const FrenchChallengeDashboard = () => {
     const existingDay = filteredTestData.find(d => d.day === day);
     let movingAvg = null;
     
-    if (existingDay) {
-      // Экспоненциальное сглаживание (более гладкая линия)
-      const alpha = 0.3; // коэффициент сглаживания (0.1-0.5)
-      if (smoothedValue === null) {
-        smoothedValue = existingDay.mood;
-      } else {
-        smoothedValue = alpha * existingDay.mood + (1 - alpha) * smoothedValue;
+    // Скользящее среднее: -2 дня и +2 дня (окно 5 дней)
+    const windowDays = [];
+    for (let i = day - 2; i <= day + 2; i++) {
+      const dayData = filteredTestData.find(d => d.day === i);
+      if (dayData && dayData.mood !== null) {
+        windowDays.push(dayData.mood);
       }
-      movingAvg = smoothedValue;
+    }
+    
+    if (windowDays.length > 0) {
+      movingAvg = windowDays.reduce((sum, mood) => sum + mood, 0) / windowDays.length;
     }
     
     moodData.push({

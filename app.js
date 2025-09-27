@@ -461,12 +461,7 @@ const FrenchChallengeDashboard = () => {
                 return ticks;
               })(),
               tickFormatter: (value) => {
-                // Скрываем цифры базовых меток, которые слишком близко к текущему дню
-                const baseTicks = [1, 10, 30, 60, 90];
-                if (baseTicks.includes(value) && Math.abs(value - displayCurrentDay) < 2 && value !== displayCurrentDay) {
-                  return ''; // Скрываем цифру только если это НЕ текущий день
-                }
-                return value; // Показываем цифру
+                return ''; // Скрываем все labels
               },
               tickLine: { stroke: '#000000', strokeWidth: 1 },
               tick: { 
@@ -489,19 +484,10 @@ const FrenchChallengeDashboard = () => {
               data: allData.filter(d => d.day <= displayCurrentDay)
             })
           )
-        ),
-        React.createElement('div', { 
-          className: "absolute text-xs text-gray-500", 
-          style: { 
-            left: `${25 + (1 / 90) * 80}%`, 
-            top: '93%',
-            transform: 'translateX(-50%)',
-            whiteSpace: 'nowrap'
-          }
-        }, "days from start →")
+        )
       ),
       // Второй график - прямая линия с кружочками для пройденных уроков
-      React.createElement('div', { className: "h-20 relative", style: { marginTop: '10px' } },
+      React.createElement('div', { className: "h-20 relative", style: { marginTop: '10px', height: '4rem' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(BarChart, { data: allData, barCategoryGap: 0, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 
@@ -554,7 +540,16 @@ const FrenchChallengeDashboard = () => {
               strokeWidth: 1
             })
           )
-        )
+        ),
+        React.createElement('div', { 
+          className: "absolute text-xs text-gray-500", 
+          style: { 
+            left: `${25 + (1 / 90) * 80}%`, 
+            top: '93%',
+            transform: 'translateX(-50%)',
+            whiteSpace: 'nowrap'
+          }
+        }, "days from start →")
       )
     ),
 

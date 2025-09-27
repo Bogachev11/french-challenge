@@ -33,6 +33,30 @@ const MoodDot = (props) => {
   });
 };
 
+// Кастомный компонент для кружочков уроков
+const LessonDots = (props) => {
+  const { cx, cy, payload } = props;
+  if (!payload || payload.dailyLessons === 0) return null;
+  
+  const lessonCount = payload.dailyLessons;
+  const dots = [];
+  
+  for (let i = 0; i < lessonCount; i++) {
+    dots.push(
+      React.createElement('circle', {
+        key: i,
+        cx: cx,
+        cy: cy - (i * 8), // Смещение вверх для каждого урока
+        r: 3,
+        fill: '#9ca3af',
+        fillOpacity: 0.8
+      })
+    );
+  }
+  
+  return React.createElement('g', null, ...dots);
+};
+
 const FrenchChallengeDashboard = () => {
   // State for Google Sheets data
   const [sheetData, setSheetData] = React.useState([]);
@@ -455,13 +479,6 @@ const FrenchChallengeDashboard = () => {
               axisLine: false,
               fontSize: 12
             }),
-            React.createElement(Bar, { 
-              dataKey: "dailyLessons", 
-              fill: "#9ca3af", 
-              fillOpacity: 0.8,
-              stroke: "#9ca3af",
-              strokeWidth: 1
-            }),
             React.createElement(Line, { 
               type: "step", 
               dataKey: "lessons", 
@@ -482,6 +499,62 @@ const FrenchChallengeDashboard = () => {
             whiteSpace: 'nowrap'
           }
         }, "days from start →")
+      ),
+      // Второй график - прямая линия с кружочками для пройденных уроков
+      React.createElement('div', { className: "h-20 relative", style: { marginTop: '10px' } },
+        React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
+          React.createElement(BarChart, { data: allData, barCategoryGap: 0, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
+            React.createElement(XAxis, { 
+              type: "number",
+              dataKey: "day", 
+              domain: [0, 90],
+              allowDuplicatedCategory: true,
+              interval: 0,
+              ticks: (() => {
+                const baseTicks = [1, 10, 30, 60, 90];
+                let ticks = [...baseTicks];
+                
+                if (!baseTicks.includes(displayCurrentDay)) {
+                  ticks.push(displayCurrentDay);
+                  ticks.sort((a, b) => a - b);
+                }
+                
+                return ticks;
+              })(),
+              tickFormatter: (value) => {
+                const baseTicks = [1, 10, 30, 60, 90];
+                if (baseTicks.includes(value) && Math.abs(value - displayCurrentDay) < 2 && value !== displayCurrentDay) {
+                  return '';
+                }
+                return value;
+              },
+              tickLine: { stroke: '#000000', strokeWidth: 1 },
+              tick: { 
+                fontSize: 12
+              }
+            }),
+            React.createElement(YAxis, { 
+              domain: [0, Math.ceil(Math.max(...allData.map(d => d.dailyLessons)))],
+              ticks: (() => {
+                const max = Math.ceil(Math.max(...allData.map(d => d.dailyLessons)));
+                const ticks = [];
+                for (let i = 0; i <= max; i += 1) {
+                  ticks.push(i);
+                }
+                return ticks;
+              })(),
+              axisLine: false,
+              fontSize: 12
+            }),
+            React.createElement(Bar, { 
+              dataKey: "dailyLessons", 
+              fill: "#9ca3af", 
+              fillOpacity: 0.8,
+              stroke: "#9ca3af",
+              strokeWidth: 1
+            })
+          )
+        )
       )
     ),
 

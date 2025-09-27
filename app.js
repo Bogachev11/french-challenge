@@ -218,7 +218,7 @@ const FrenchChallengeDashboard = () => {
   
   // Рассчитываем общее время (включая otherTime)
   const totalTime = filteredTestData.reduce((sum, day) => sum + day.theoryTime + day.homeworkTime + day.otherTime, 0);
-  const avgTime = Math.round(totalTime / filteredTestData.filter(d => (d.theoryTime + d.homeworkTime + d.otherTime) > 0).length);
+  const avgTime = Math.round(totalTime / displayCurrentDay);
   
   // Прогноз уроков
   const currentLessonsPerDay = completedLessons / displayCurrentDay;

@@ -25,6 +25,7 @@ const MoodDot = (props) => {
   const color = getMoodColor(payload.mood);
   
   return React.createElement('circle', {
+    key: `mood-${payload.day}`,
     cx: cx,
     cy: cy,
     r: 3,
@@ -44,7 +45,7 @@ const LessonDots = (props) => {
   for (let i = 0; i < lessonCount; i++) {
     dots.push(
       React.createElement('circle', {
-        key: i,
+        key: `lesson-${i}`,
         cx: cx,
         cy: cy - (i * 8), // Смещение вверх для каждого урока
         r: 3,
@@ -68,106 +69,60 @@ const FrenchChallengeDashboard = () => {
   const API_KEY = 'AIzaSyBOewv068qAmujAaU5du_-VqAfqzzjkgGM';
   const RANGE = '90_days_list!A2:H'; // Data starting from row 2 (without headers) from sheet "90_days_list"
   
-  // Load data from Google Sheets (alternative method via CSV)
+  // Load data from Google Sheets
   React.useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         
-        // Пробуем сначала через CSV (публичный доступ) - лист "90_days_list"
-        const csvUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0&range=90_days_list`;
-        console.log('Trying CSV method:', csvUrl);
-        
-        const response = await fetch(csvUrl);
+        const response = await fetch(
+          `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`,
+          {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json',
+            }
+          }
+        );
         
         if (!response.ok) {
-          throw new Error(`CSV fetch failed: ${response.status}`);
+          throw new Error(`API fetch failed: ${response.status}`);
         }
         
-        const csvText = await response.text();
-        console.log('CSV data:', csvText);
+        const data = await response.json();
+        console.log('API data:', data);
         
-        // Парсим CSV
-        const lines = csvText.split('\n');
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-        console.log('Headers:', headers);
+        const formattedData = data.values
+          .filter(row => row.length >= 2 && row[1])
+          .map((row, index) => ({
+            day: parseInt(row[1]) || (index + 1),
+            completedLessons: row[2] || '',
+            attemptedLessons: row[3] || '',
+            theoryTime: parseInt(row[4]) || 0,
+            homeworkTime: parseInt(row[5]) || 0,
+            otherTime: parseInt(row[6]) || 0,
+            mood: parseInt(row[7]) || null
+          }));
         
-        const formattedData = lines.slice(1) // Пропускаем заголовки
-          .filter(line => line.trim()) // Убираем пустые строки
-          .map((line, index) => {
-            const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-            console.log(`Row ${index + 1}:`, values);
-            
-            return {
-              day: parseInt(values[1]) || (index + 1), // Day (колонка B)
-              completedLessons: values[2] || '', // Completed_Lessons (колонка C)
-              attemptedLessons: values[3] || '', // Attempted_Lessons (колонка D)
-              theoryTime: parseInt(values[4]) || 0, // Theory_Time (колонка E)
-              homeworkTime: parseInt(values[5]) || 0, // Homework_Time (колонка F)
-              otherTime: parseInt(values[6]) || 0, // Other_Time (колонка G)
-              mood: parseInt(values[7]) || null // Mood (колонка H)
-            };
-          })
-          .filter(row => row.day); // Фильтруем строки без дня
-        
-        console.log('Formatted data:', formattedData);
         setSheetData(formattedData);
         setError(null);
         
-      } catch (csvError) {
-        console.log('CSV method failed, trying API method:', csvError);
-        
-        // Fallback к API методу
-        try {
-          const response = await fetch(
-            `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`,
-            {
-              method: 'GET',
-              headers: {
-                'Accept': 'application/json',
-              }
-            }
-          );
-          
-          if (!response.ok) {
-            throw new Error(`API fetch failed: ${response.status}`);
-          }
-          
-          const data = await response.json();
-          console.log('API data:', data);
-          
-          const formattedData = data.values
-            .filter(row => row.length >= 2 && row[1])
-            .map((row, index) => ({
-              day: parseInt(row[1]) || (index + 1),
-              completedLessons: row[2] || '',
-              attemptedLessons: row[3] || '',
-              theoryTime: parseInt(row[4]) || 0,
-              homeworkTime: parseInt(row[5]) || 0,
-              otherTime: parseInt(row[6]) || 0,
-              mood: parseInt(row[7]) || null
-            }));
-          
-          setSheetData(formattedData);
-          setError(null);
-          
-        } catch (apiError) {
-          console.error('Both methods failed:', apiError);
-          setError(`Loading error: ${apiError.message}`);
-          // Fallback к тестовым данным
-          setSheetData([
-            { day: 1, completedLessons: "1", attemptedLessons: "", theoryTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
-            { day: 2, completedLessons: "2", attemptedLessons: "3", theoryTime: 20, homeworkTime: 12, otherTime: 0, mood: 4 },
-            { day: 3, completedLessons: "3", attemptedLessons: "", theoryTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
-            { day: 4, completedLessons: "", attemptedLessons: "5,6", theoryTime: 40, homeworkTime: 0, otherTime: 0, mood: 2 },
-            { day: 5, completedLessons: "4,5", attemptedLessons: "", theoryTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
-            { day: 6, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
-            { day: 7, completedLessons: "6", attemptedLessons: "", theoryTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
-            { day: 8, completedLessons: "7", attemptedLessons: "", theoryTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
-            { day: 9, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
-            { day: 10, completedLessons: "8,9,10", attemptedLessons: "", theoryTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
-          ]);
-        }
+      } catch (apiError) {
+        console.error('API failed:', apiError);
+        setError(`Loading error: ${apiError.message}`);
+        // Fallback к тестовым данным
+        setSheetData([
+          { day: 1, completedLessons: "1", attemptedLessons: "", theoryTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
+          { day: 2, completedLessons: "2", attemptedLessons: "3", theoryTime: 20, homeworkTime: 12, otherTime: 0, mood: 4 },
+          { day: 3, completedLessons: "3", attemptedLessons: "", theoryTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
+          { day: 4, completedLessons: "", attemptedLessons: "5,6", theoryTime: 40, homeworkTime: 0, otherTime: 0, mood: 2 },
+          { day: 5, completedLessons: "4,5", attemptedLessons: "", theoryTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
+          { day: 6, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
+          { day: 7, completedLessons: "6", attemptedLessons: "", theoryTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
+          { day: 8, completedLessons: "7", attemptedLessons: "", theoryTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
+          { day: 9, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
+          { day: 10, completedLessons: "8,9,10", attemptedLessons: "", theoryTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
+        ]);
       } finally {
         setLoading(false);
       }
@@ -357,6 +312,15 @@ const FrenchChallengeDashboard = () => {
     } else {
       break;
     }
+  }
+
+  if (loading) {
+    return React.createElement('div', { className: "max-w-md mx-auto bg-white min-h-screen border border-gray-300 px-1 flex items-center justify-center" },
+      React.createElement('div', { className: "text-center" },
+        React.createElement('div', { className: "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4" }),
+        React.createElement('p', { className: "text-gray-600" }, "Loading...")
+      )
+    );
   }
 
   return React.createElement('div', { className: "max-w-md mx-auto bg-white min-h-screen border border-gray-300 px-1" },
@@ -711,7 +675,8 @@ const FrenchChallengeDashboard = () => {
               stroke: "transparent",
               strokeWidth: 0,
               dot: MoodDot,
-              connectNulls: false
+              connectNulls: false,
+              zIndex: 10
             }),
             React.createElement(Line, { 
               type: "monotone", 

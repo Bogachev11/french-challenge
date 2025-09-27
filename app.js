@@ -6,7 +6,32 @@ if (typeof Recharts === 'undefined') {
   console.error('Recharts not loaded');
 }
 
-const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, ComposedChart } = Recharts;
+const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, ComposedChart, Dot } = Recharts;
+
+// Функция для получения цвета по значению настроения (градиент от красного к синему)
+const getMoodColor = (value) => {
+  if (value <= 1) return '#ef4444'; // красный для 1
+  if (value <= 2) return '#ef4444'; // красный для 2
+  if (value <= 3) return '#8b5cf6'; // фиолетовый для 3
+  if (value <= 4) return '#3b82f6'; // синий для 4
+  return '#1d4ed8'; // темно-синий для 5
+};
+
+// Кастомный компонент для точек настроения
+const MoodDot = (props) => {
+  const { cx, cy, payload } = props;
+  if (!payload || payload.mood === null) return null;
+  
+  const color = getMoodColor(payload.mood);
+  
+  return React.createElement('circle', {
+    cx: cx,
+    cy: cy,
+    r: 3,
+    fill: color,
+    fillOpacity: 0.5
+  });
+};
 
 const FrenchChallengeDashboard = () => {
   // State for Google Sheets data
@@ -259,7 +284,6 @@ const FrenchChallengeDashboard = () => {
   
   // Данные для графика настроения с экспоненциальным сглаживанием
   const moodData = [];
-  let lastMovingAvgValue = null;
   let smoothedValue = null;
   
   for (let day = 1; day <= 90; day++) {
@@ -275,7 +299,6 @@ const FrenchChallengeDashboard = () => {
         smoothedValue = alpha * existingDay.mood + (1 - alpha) * smoothedValue;
       }
       movingAvg = smoothedValue;
-      lastMovingAvgValue = movingAvg;
     }
     
     moodData.push({
@@ -295,22 +318,7 @@ const FrenchChallengeDashboard = () => {
   
   const chartKey = `charts-${displayCurrentDay}`;
   
-  // Позиция для надписи рядом с последней точкой скользящей средней
-  const lastDayWithData = displayCurrentDay; // день 10
-  const chartWidth = 80; // примерно 80% ширины занимает сам график (с учетом увеличенного отступа)
-  const chartHeight = 70; // примерно 70% высоты занимает сам график (без осей)
-  const labelXPosition = `${15 + (lastDayWithData / 90) * 80}%`; // 15% отступ слева для оси Y, без дополнительного сдвига
-  const labelYPosition = lastMovingAvgValue ? 
-    `${(5 - lastMovingAvgValue) / 4 * chartHeight + 1}%` : '50%'; // точно на уровне точки скользящей средней + небольшой сдвиг
-  
-  // Цвет последней точки скользящей средней (градиент от синего к красному)
-  const getMovingAvgColor = (value) => {
-    if (value <= 1) return '#ef4444'; // красный для низких значений
-    if (value >= 5) return '#3b82f6'; // синий для высоких значений
-    if (value <= 3) return '#8b5cf6'; // фиолетовый для средних значений
-    return '#3b82f6'; // синий для высоких значений
-  };
-  const labelColor = lastMovingAvgValue ? getMovingAvgColor(lastMovingAvgValue) : '#e91e63';
+
 
   // Подсчет страйка (дни с активностью)
   let currentStreak = 0;
@@ -383,7 +391,30 @@ const FrenchChallengeDashboard = () => {
     // График уроков
     React.createElement('div', { className: "px-4 mb-4" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Lessons Progress"),
-      // React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "cumulative lessons completed"),
+      React.createElement('div', { className: "text-sm text-gray-500 mb-1 flex items-center gap-3" },
+        React.createElement('div', { className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            style: { 
+              width: '8px', 
+              height: '8px', 
+              backgroundColor: '#9ca3af',
+              borderRadius: '50%'
+            } 
+          }),
+          React.createElement('span', null, "Daily")
+        ),
+        React.createElement('div', { className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            style: { 
+              width: '8px', 
+              height: '8px', 
+              backgroundColor: '#3b82f6',
+              borderRadius: '50%'
+            } 
+          }),
+          React.createElement('span', null, "Cumulative")
+        )
+      ),
       React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px', height: 'calc(9rem * 0.85)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
@@ -419,47 +450,29 @@ const FrenchChallengeDashboard = () => {
               }
             }),
             React.createElement(YAxis, { 
-              domain: [0, Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5],
-              ticks: (() => {
-                const max = Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5;
-                const ticks = [];
-                for (let i = 0; i <= max; i += 5) {
-                  ticks.push(i);
-                }
-                return ticks;
-              })(),
+              domain: [0, 40],
+              ticks: [0, 10, 20, 30, 40],
               axisLine: false,
               fontSize: 12
             }),
             React.createElement(Bar, { 
               dataKey: "dailyLessons", 
-              fill: "#1d4ed8", 
+              fill: "#9ca3af", 
               fillOpacity: 0.8,
-              stroke: "#1d4ed8",
+              stroke: "#9ca3af",
               strokeWidth: 1
             }),
             React.createElement(Line, { 
               type: "step", 
               dataKey: "lessons", 
-              stroke: displayCurrentDay >= 7 ? "#3b82f6" : "transparent", 
+              stroke: "#3b82f6", 
               strokeWidth: 3,
               dot: false,
               connectNulls: false,
-              data: displayCurrentDay >= 7 ? allData.filter(d => d.day <= displayCurrentDay) : []
+              data: allData.filter(d => d.day <= displayCurrentDay)
             })
           )
         ),
-        displayCurrentDay >= 7 ? React.createElement('div', { 
-          className: "absolute text-sm font-bold pointer-events-auto", 
-          style: { 
-            left: `${15 + (displayCurrentDay / 90) * 80}%`, 
-            top: `${(Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5 - completedLessons) / (Math.ceil(Math.max(...allData.map(d => d.lessons)) / 5) * 5) * 70 + 1}%`, 
-            color: '#3b82f6',
-            whiteSpace: 'nowrap',
-            zIndex: 10,
-            transform: 'translateY(-50%)'
-          }
-        }, "cumulative lessons") : null,
         React.createElement('div', { 
           className: "absolute text-xs text-gray-500", 
           style: { 
@@ -575,7 +588,7 @@ const FrenchChallengeDashboard = () => {
 
     // График настроения
     React.createElement('div', { className: "px-4 mb-0" },
-      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Emotional State"),
+      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Emotional State, moving average"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – Absolutely brilliant."),
       React.createElement('div', { className: "h-28 relative", style: { marginTop: '10px' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
@@ -629,55 +642,19 @@ const FrenchChallengeDashboard = () => {
               dataKey: "mood", 
               stroke: "transparent",
               strokeWidth: 0,
-              dot: { 
-                fill: displayCurrentDay >= 7 ? "#6b7280" : (() => {
-                  const moodValue = filteredTestData.find(d => d.day === displayCurrentDay)?.mood || 4;
-                  if (moodValue <= 1) return '#ef4444';
-                  if (moodValue >= 5) return '#3b82f6';
-                  if (moodValue <= 3) return '#8b5cf6';
-                  return '#3b82f6';
-                })(),
-                fillOpacity: displayCurrentDay >= 7 ? 0.5 : 1, 
-                r: displayCurrentDay >= 7 ? 3 : 4.5 
-              },
+              dot: MoodDot,
               connectNulls: false
             }),
-            displayCurrentDay < 7 ? React.createElement(Line, { 
-              type: "monotone", 
-              dataKey: "mood", 
-              stroke: (() => {
-                const moodValue = filteredTestData.find(d => d.day === displayCurrentDay)?.mood || 4;
-                if (moodValue <= 1) return '#ef4444';
-                if (moodValue >= 5) return '#3b82f6';
-                if (moodValue <= 3) return '#8b5cf6';
-                return '#3b82f6';
-              })(),
-              strokeWidth: 2,
-              dot: false,
-              connectNulls: false,
-              data: filteredTestData.filter(d => d.day === displayCurrentDay)
-            }) : null,
             React.createElement(Line, { 
               type: "monotone", 
               dataKey: "movingAvg", 
-              stroke: displayCurrentDay >= 7 ? "url(#moodGradient)" : "transparent", 
+              stroke: "url(#moodGradient)", 
               strokeWidth: 4,
               dot: false,
               connectNulls: false
             })
           )
         ),
-        displayCurrentDay >= 7 ? React.createElement('div', { 
-          className: "absolute text-sm font-bold pointer-events-auto", 
-          style: { 
-            left: labelXPosition, 
-            top: labelYPosition, 
-            color: labelColor,
-            whiteSpace: 'nowrap',
-            zIndex: 10,
-            transform: 'translateY(-50%)'
-          }
-        }, "moving average") : null
       )
     ),
 

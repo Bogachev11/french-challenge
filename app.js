@@ -421,25 +421,25 @@ const FrenchChallengeDashboard = () => {
             style: { 
               width: '8px', 
               height: '8px', 
-              backgroundColor: '#9ca3af',
+              backgroundColor: '#3b82f6',
               borderRadius: '50%'
             } 
           }),
-          React.createElement('span', null, "Daily")
+          React.createElement('span', null, "Cumulative")
         ),
         React.createElement('div', { className: "flex items-center gap-1" },
           React.createElement('div', { 
             style: { 
               width: '8px', 
               height: '8px', 
-              backgroundColor: '#3b82f6',
+              backgroundColor: '#9ca3af',
               borderRadius: '50%'
             } 
           }),
-          React.createElement('span', null, "Cumulative")
+          React.createElement('span', null, "Daily")
         )
       ),
-      React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px', height: 'calc(9rem * 0.85)' } },
+      React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px', height: 'calc(9rem * 0.85 / 1.5 + 10px)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 
@@ -487,9 +487,9 @@ const FrenchChallengeDashboard = () => {
         )
       ),
       // Второй график - прямая линия с кружочками для пройденных уроков
-      React.createElement('div', { className: "h-20 relative", style: { marginTop: '10px', height: '4rem' } },
+      React.createElement('div', { className: "h-20 relative", style: { marginTop: '-15px', height: '3rem' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(BarChart, { data: allData, barCategoryGap: 0, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
+          React.createElement(BarChart, { data: allData, barCategoryGap: 0, margin: { left: 5, right: 10, top: 8, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
@@ -544,9 +544,9 @@ const FrenchChallengeDashboard = () => {
         React.createElement('div', { 
           className: "absolute text-xs text-gray-500", 
           style: { 
-            left: `${25 + (1 / 90) * 80}%`, 
+            left: `${13 + (1 / 90) * 80}%`, 
             top: '93%',
-            transform: 'translateX(-50%)',
+            transform: 'translateY(-7px)',
             whiteSpace: 'nowrap'
           }
         }, "days from start →")
@@ -657,8 +657,8 @@ const FrenchChallengeDashboard = () => {
     // График настроения
     React.createElement('div', { className: "px-4 mb-0" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Emotional State, moving average"),
-      React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – Absolutely brilliant."),
-      React.createElement('div', { className: "h-28 relative", style: { marginTop: '10px' } },
+      React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – absolutely brilliant"),
+      React.createElement('div', { className: "h-28 relative", style: { marginTop: '10px', height: 'calc(7rem - 20px)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(LineChart, { data: moodData, margin: { left: 5, right: 10, top: 9, bottom: 5 }, key: chartKey },
             React.createElement('defs', null,

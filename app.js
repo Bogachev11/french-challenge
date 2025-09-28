@@ -90,7 +90,7 @@ const FrenchChallengeDashboard = () => {
   // Google Sheets API settings
   const SHEET_ID = '1h-5h_20vKLjIq9t0YlFf5BvPDMOaKURfbzZuNSyTyZ4';
   const API_KEY = 'AIzaSyBOewv068qAmujAaU5du_-VqAfqzzjkgGM';
-  const RANGE = '90_days_list!A2:H'; // Data starting from row 2 (without headers) from sheet "90_days_list"
+  const RANGE = '90_days_list!A2:J'; // Data starting from row 2 (without headers) from sheet "90_days_list"
   
   // Load data from Google Sheets
   React.useEffect(() => {
@@ -118,14 +118,15 @@ const FrenchChallengeDashboard = () => {
         const formattedData = data.values
           .filter(row => row.length >= 2 && row[1])
           .map((row, index) => ({
-            day: parseInt(row[1]) || (index + 1),
-            completedLessons: row[2] || '',
-            attemptedLessons: row[3] || '',
-            theoryTime: parseInt(row[4]) || 0,
-            homeworkTime: parseInt(row[5]) || 0,
-            otherTime: parseInt(row[6]) || 0,
-            mood: parseInt(row[7]) || null
-          }));
+              day: parseInt(row[1]) || (index + 1),
+              completedLessons: row[2] || '',
+              attemptedLessons: row[3] || '',
+              theoryTime: parseInt(row[4]) || 0,
+              homeworkTime: parseInt(row[5]) || 0,
+              prolingvoTime: parseInt(row[6]) || 0,
+              otherTime: parseInt(row[7]) || 0,
+              mood: parseInt(row[8]) || null
+            }));
         
         setSheetData(formattedData);
         setError(null);
@@ -135,16 +136,16 @@ const FrenchChallengeDashboard = () => {
         setError(`Loading error: ${apiError.message}`);
         // Fallback к тестовым данным
         setSheetData([
-          { day: 1, completedLessons: "1", attemptedLessons: "", theoryTime: 15, homeworkTime: 10, otherTime: 0, mood: 4 },
-          { day: 2, completedLessons: "2", attemptedLessons: "3", theoryTime: 20, homeworkTime: 12, otherTime: 0, mood: 4 },
-          { day: 3, completedLessons: "3", attemptedLessons: "", theoryTime: 25, homeworkTime: 28, otherTime: 30, mood: 5 },
-          { day: 4, completedLessons: "", attemptedLessons: "5,6", theoryTime: 40, homeworkTime: 0, otherTime: 0, mood: 2 },
-          { day: 5, completedLessons: "4,5", attemptedLessons: "", theoryTime: 15, homeworkTime: 45, otherTime: 0, mood: 4 },
-          { day: 6, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
-          { day: 7, completedLessons: "6", attemptedLessons: "", theoryTime: 10, homeworkTime: 0, otherTime: 0, mood: 3 },
-          { day: 8, completedLessons: "7", attemptedLessons: "", theoryTime: 0, homeworkTime: 40, otherTime: 0, mood: 4 },
-          { day: 9, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, otherTime: 0, mood: 2 },
-          { day: 10, completedLessons: "8,9,10", attemptedLessons: "", theoryTime: 10, homeworkTime: 17, otherTime: 0, mood: 5 }
+          { day: 1, completedLessons: "1", attemptedLessons: "", theoryTime: 15, homeworkTime: 10, prolingvoTime: 5, otherTime: 0, mood: 4 },
+          { day: 2, completedLessons: "2", attemptedLessons: "3", theoryTime: 20, homeworkTime: 12, prolingvoTime: 8, otherTime: 0, mood: 4 },
+          { day: 3, completedLessons: "3", attemptedLessons: "", theoryTime: 25, homeworkTime: 28, prolingvoTime: 10, otherTime: 30, mood: 5 },
+          { day: 4, completedLessons: "", attemptedLessons: "5,6", theoryTime: 40, homeworkTime: 0, prolingvoTime: 0, otherTime: 0, mood: 2 },
+          { day: 5, completedLessons: "4,5", attemptedLessons: "", theoryTime: 15, homeworkTime: 45, prolingvoTime: 12, otherTime: 0, mood: 4 },
+          { day: 6, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, prolingvoTime: 0, otherTime: 0, mood: 2 },
+          { day: 7, completedLessons: "6", attemptedLessons: "", theoryTime: 10, homeworkTime: 0, prolingvoTime: 6, otherTime: 0, mood: 3 },
+          { day: 8, completedLessons: "7", attemptedLessons: "", theoryTime: 0, homeworkTime: 40, prolingvoTime: 8, otherTime: 0, mood: 4 },
+          { day: 9, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, prolingvoTime: 0, otherTime: 0, mood: 2 },
+          { day: 10, completedLessons: "8,9,10", attemptedLessons: "", theoryTime: 10, homeworkTime: 17, prolingvoTime: 7, otherTime: 0, mood: 5 }
         ]);
       } finally {
         setLoading(false);
@@ -244,7 +245,7 @@ const FrenchChallengeDashboard = () => {
   const completedLessons = allCompletedLessons.length;
   
   // Рассчитываем общее время (включая otherTime)
-  const totalTime = filteredTestData.reduce((sum, day) => sum + day.theoryTime + day.homeworkTime + day.otherTime, 0);
+  const totalTime = filteredTestData.reduce((sum, day) => sum + day.theoryTime + day.homeworkTime + day.prolingvoTime + day.otherTime, 0);
   const avgTime = Math.round(totalTime / displayCurrentDay);
   
   // Прогноз уроков
@@ -280,6 +281,7 @@ const FrenchChallengeDashboard = () => {
       day: day,
       theoryTime: existingDay ? existingDay.theoryTime : 0,
       homeworkTime: existingDay ? existingDay.homeworkTime : 0,
+      prolingvoTime: existingDay ? existingDay.prolingvoTime : 0,
       otherTime: existingDay ? existingDay.otherTime : 0
     });
   }
@@ -328,7 +330,7 @@ const FrenchChallengeDashboard = () => {
   let currentStreak = 0;
   for (let i = filteredTestData.length - 1; i >= 0; i--) {
     const day = filteredTestData[i];
-    const hasActivity = (day.theoryTime + day.homeworkTime + day.otherTime) > 0 || 
+    const hasActivity = (day.theoryTime + day.homeworkTime + day.prolingvoTime + day.otherTime) > 0 || 
                        parseLessons(day.completedLessons).length > 0 || 
                        parseLessons(day.attemptedLessons).length > 0;
     
@@ -572,6 +574,17 @@ const FrenchChallengeDashboard = () => {
             style: { 
               width: '8px', 
               height: '8px', 
+              backgroundColor: '#e91e63',
+              borderRadius: '50%'
+            } 
+          }),
+          React.createElement('span', null, "Basic grammar")
+        ),
+        React.createElement('div', { className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            style: { 
+              width: '8px', 
+              height: '8px', 
               backgroundColor: '#9ca3af',
               borderRadius: '50%'
             } 
@@ -634,6 +647,7 @@ const FrenchChallengeDashboard = () => {
             }),
             React.createElement(Bar, { dataKey: "theoryTime", stackId: "time", fill: "#03a9f4" }),
             React.createElement(Bar, { dataKey: "homeworkTime", stackId: "time", fill: "#673ab7" }),
+            React.createElement(Bar, { dataKey: "prolingvoTime", stackId: "time", fill: "#e91e63" }),
             React.createElement(Bar, { dataKey: "otherTime", stackId: "time", fill: "#9ca3af" })
           )
         )
@@ -685,7 +699,7 @@ const FrenchChallengeDashboard = () => {
             }),
             React.createElement(YAxis, { 
               domain: [1, 5],
-              ticks: [1, 5],
+              ticks: [1, 2, 3, 4, 5],
               axisLine: false,
               fontSize: 12
             }),

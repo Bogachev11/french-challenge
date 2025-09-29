@@ -68,6 +68,15 @@ const CustomXAxisTick = (props) => {
     return React.createElement('g', { transform: `translate(${x},${y})` });
   }
   
+  // Скрываем подписи для 1, 10, 30, 60, 90 если текущий день рядом
+  const specialDays = [1, 10, 30, 60, 90];
+  const shouldHideSpecialDay = specialDays.includes(payload.value) && 
+    Math.abs(payload.value - currentDay) <= 2;
+  
+  if (shouldHideSpecialDay) {
+    return React.createElement('g', { transform: `translate(${x},${y})` });
+  }
+  
   return React.createElement('g', { transform: `translate(${x},${y})` },
     React.createElement('text', {
       x: 0,

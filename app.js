@@ -252,9 +252,9 @@ const FrenchChallengeDashboard = () => {
   const currentLessonsPerDay = completedLessons / displayCurrentDay;
   const allData = [];
   
-  // Заполняем данные для всех 90 дней с накопленным количеством уроков
+  // Заполняем данные для всех дней с накопленным количеством уроков
   let cumulativeLessons = 0;
-  for (let day = 1; day <= 90; day++) {
+  for (let day = 1; day <= displayCurrentDay; day++) {
     const existingDay = filteredTestData.find(d => d.day === day);
     if (existingDay) {
       const dayCompletedLessons = parseLessons(existingDay.completedLessons).length;
@@ -275,7 +275,7 @@ const FrenchChallengeDashboard = () => {
   
   // Данные для графика времени (все 90 дней)
   const timeData = [];
-  for (let day = 1; day <= 90; day++) {
+  for (let day = 1; day <= displayCurrentDay; day++) {
     const existingDay = filteredTestData.find(d => d.day === day);
     timeData.push({
       day: day,
@@ -290,7 +290,7 @@ const FrenchChallengeDashboard = () => {
   const moodData = [];
   let smoothedValue = null;
   
-  for (let day = 1; day <= 90; day++) {
+  for (let day = 1; day <= displayCurrentDay; day++) {
     const existingDay = filteredTestData.find(d => d.day === day);
     let movingAvg = null;
     

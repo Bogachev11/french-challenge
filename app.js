@@ -129,7 +129,7 @@ const FrenchChallengeDashboard = () => {
   const [sheetData, setSheetData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
-  const [lastUpdateTime, setLastUpdateTime] = React.useState(new Date());
+  const [lastUpdateTime, setLastUpdateTime] = React.useState(new Date(Date.now() - 24 * 60 * 60 * 1000)); // Default to yesterday
   const [previousDataHash, setPreviousDataHash] = React.useState('');
   
   // Load last update time and data hash from localStorage
@@ -422,6 +422,8 @@ const FrenchChallengeDashboard = () => {
 
   // Подсчет страйка (дни с активностью)
   let currentStreak = 0;
+  let lastActiveDay = 0;
+  
   for (let i = filteredTestData.length - 1; i >= 0; i--) {
     const day = filteredTestData[i];
     const hasActivity = (day.theoryTime + day.homeworkTime + day.prolingvoTime + day.otherTime) > 0 || 
@@ -429,11 +431,27 @@ const FrenchChallengeDashboard = () => {
                        parseLessons(day.attemptedLessons).length > 0;
     
     if (hasActivity) {
+      if (currentStreak === 0) {
+        lastActiveDay = day.day; // Запоминаем последний день с активностью
+      }
       currentStreak++;
     } else {
       break;
     }
   }
+  
+  // Определяем, показывать ли смайл пропуска
+  let streakIcon = "none";
+  const daysSinceLastActivity = displayCurrentDay - lastActiveDay;
+  
+  if (currentStreak > 0) {
+    // Есть активность → показываем молнию
+    streakIcon = "lightning";
+  } else if (daysSinceLastActivity > 1) {
+    // Нет активности более одного дня → показываем пропуск
+    streakIcon = "shrug";
+  }
+  // Если daysSinceLastActivity === 1 (вчера была активность), ничего не показываем
 
   if (loading) {
     return React.createElement('div', { className: "max-w-md mx-auto bg-white min-h-screen border border-gray-300 px-1 flex items-center justify-center" },
@@ -452,9 +470,9 @@ const FrenchChallengeDashboard = () => {
           "90 days • 40 lessons • ", 
           React.createElement('span', { style: { fontWeight: 'bold' } }, `Day ${displayCurrentDay}`)
         ),
-        React.createElement('div', { className: "absolute top-5 right-4 flex items-center gap-2" },
+        React.createElement('div', { className: "absolute top-5 right-4 flex items-center gap-1" },
           React.createElement('div', { className: "w-2 h-2 bg-blue-500 rounded-full animate-pulse" }),
-        React.createElement('span', { className: "text-sm text-black opacity-70" }, `updated ${getUpdateTimeText(lastUpdateTime)}`)
+        React.createElement('span', { className: "text-sm text-black opacity-70" }, `upd ${getUpdateTimeText(lastUpdateTime)}`)
       )
     ),
 
@@ -493,7 +511,8 @@ const FrenchChallengeDashboard = () => {
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
         React.createElement('div', { className: "text-xl font-bold text-gray-800 flex items-center gap-1" },
-          currentStreak > 0 && React.createElement('span', { style: { fontSize: '16px' } }, "⚡"),
+          streakIcon === "lightning" && React.createElement('span', { style: { fontSize: '16px' } }, "⚡"),
+          streakIcon === "shrug" && React.createElement('span', { style: { fontSize: '16px' } }, "🤷‍♂️"),
           React.createElement('span', null, currentStreak > 0 ? currentStreak : "")
         ),
         React.createElement('div', { className: "text-sm text-gray-600" }, "streak")

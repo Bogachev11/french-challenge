@@ -90,11 +90,66 @@ const CustomXAxisTick = (props) => {
   );
 };
 
+// Function for formatting update time
+const getUpdateTimeText = (updateTime) => {
+  const now = new Date();
+  const diffMs = now - updateTime;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  console.log('getUpdateTimeText called with:', updateTime, 'Diff minutes:', Math.floor(diffMs / (1000 * 60)));
+
+  if (diffHours < 1) {
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    return `${diffMinutes} min ago`;
+  } else if (diffHours < 24 && diffDays === 0) {
+    return `${diffHours}h ago`;
+  } else if (diffDays === 1) {
+    return 'yesterday';
+  } else if (diffDays >= 2) {
+    return '2+ days ago';
+  }
+  
+  return 'today';
+};
+
+// Simple function to save time to localStorage
+const saveUpdateTime = (time) => {
+  localStorage.setItem('french-dashboard-update-time', time.toISOString());
+  console.log('Saved update time to localStorage:', time);
+};
+
+// Simple function to calculate data hash
+const calculateDataHash = (data) => {
+  return JSON.stringify(data);
+};
+
 const FrenchChallengeDashboard = () => {
   // State for Google Sheets data
   const [sheetData, setSheetData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
+  const [lastUpdateTime, setLastUpdateTime] = React.useState(new Date());
+  const [previousDataHash, setPreviousDataHash] = React.useState('');
+  
+  // Load last update time and data hash from localStorage
+  React.useEffect(() => {
+    const savedTime = localStorage.getItem('french-dashboard-update-time');
+    const savedDataHash = localStorage.getItem('french-dashboard-data-hash');
+    
+    if (savedTime) {
+      setLastUpdateTime(new Date(savedTime));
+      console.log('Loaded last update time from localStorage:', new Date(savedTime));
+    } else {
+      // First time - set to yesterday
+      setLastUpdateTime(new Date(Date.now() - 24 * 60 * 60 * 1000));
+    }
+    
+    if (savedDataHash) {
+      console.log('Loaded previous data hash from localStorage');
+      setPreviousDataHash(savedDataHash);
+    }
+  }, []);
   
   // Google Sheets API settings
   const SHEET_ID = '1h-5h_20vKLjIq9t0YlFf5BvPDMOaKURfbzZuNSyTyZ4';
@@ -108,11 +163,12 @@ const FrenchChallengeDashboard = () => {
         setLoading(true);
         
         const response = await fetch(
-          `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`,
+          `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}&t=${Date.now()}`,
           {
             method: 'GET',
             headers: {
               'Accept': 'application/json',
+              'Cache-Control': 'no-cache',
             }
           }
         );
@@ -139,6 +195,35 @@ const FrenchChallengeDashboard = () => {
         
         setSheetData(formattedData);
         setError(null);
+        
+        // Check if data actually changed by comparing hashes
+        const newDataHash = calculateDataHash(formattedData);
+        const storedHash = localStorage.getItem('french-dashboard-data-hash') || '';
+        
+        console.log('New data hash:', newDataHash.substring(0, 50) + '...');
+        console.log('Previous data hash from localStorage:', storedHash.substring(0, 50) + '...');
+        console.log('Hash lengths - New:', newDataHash.length, 'Stored:', storedHash.length);
+        
+        if (newDataHash !== storedHash) {
+          // Data changed - update time
+          const now = new Date();
+          setLastUpdateTime(now);
+          saveUpdateTime(now);
+          console.log('Data changed! Time updated to now');
+        } else {
+          console.log('No changes detected - keeping existing time');
+          // If this is truly the first load (no stored hash), set to yesterday
+          if (!storedHash) {
+            const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+            setLastUpdateTime(yesterday);
+            saveUpdateTime(yesterday);
+            console.log('First load detected - set to yesterday');
+          }
+        }
+        
+        // Always save current data hash for next comparison
+        setPreviousDataHash(newDataHash);
+        localStorage.setItem('french-dashboard-data-hash', newDataHash);
         
       } catch (apiError) {
         console.error('API failed:', apiError);
@@ -369,7 +454,7 @@ const FrenchChallengeDashboard = () => {
         ),
         React.createElement('div', { className: "absolute top-5 right-4 flex items-center gap-2" },
           React.createElement('div', { className: "w-2 h-2 bg-blue-500 rounded-full animate-pulse" }),
-        React.createElement('span', { className: "text-sm text-black opacity-70" }, "updated today")
+        React.createElement('span', { className: "text-sm text-black opacity-70" }, `updated ${getUpdateTimeText(lastUpdateTime)}`)
       )
     ),
 

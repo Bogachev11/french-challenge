@@ -28,5 +28,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/bogachev11/french-challenge.git"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
   }
 }

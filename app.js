@@ -119,6 +119,65 @@ const saveUpdateTime = (time) => {
   console.log('Saved update time to localStorage:', time);
 };
 
+// GitHub API function to update log file
+const updateGitHubLog = async () => {
+  const githubToken = localStorage.getItem('github-token');
+  if (!githubToken) {
+    console.log('GitHub token not found in localStorage');
+    return;
+  }
+  
+  const repo = 'bogachev11/french-challenge';
+  const filePath = 'update-log.json';
+
+  try {
+    // Получить текущий файл
+    const getResponse = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+      headers: {
+        'Authorization': `token ${githubToken}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    
+    if (getResponse.ok) {
+      const fileData = await getResponse.json();
+      const currentContent = JSON.parse(atob(fileData.content));
+      
+      // Обновить время
+      const newContent = {
+        ...currentContent,
+        lastUpdateTime: new Date().toISOString(),
+        commitMessage: `Data updated at ${new Date().toLocaleString()}`
+      };
+      
+      // Записать новый файл
+      const putResponse = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${githubToken}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `Update log: ${new Date().toISOString()}`,
+          content: btoa(JSON.stringify(newContent, null, 2)),
+          sha: fileData.sha
+        })
+      });
+      
+      if (putResponse.ok) {
+        console.log('GitHub log updated successfully');
+      } else {
+        console.log('Failed to update GitHub log:', putResponse.status);
+      }
+    } else {
+      console.log('Failed to get GitHub file:', getResponse.status);
+    }
+  } catch (error) {
+    console.log('GitHub API error:', error);
+  }
+};
+
 // Simple function to calculate data hash
 const calculateDataHash = (data) => {
   return JSON.stringify(data);
@@ -132,23 +191,49 @@ const FrenchChallengeDashboard = () => {
   const [lastUpdateTime, setLastUpdateTime] = React.useState(new Date(Date.now() - 24 * 60 * 60 * 1000)); // Default to yesterday
   const [previousDataHash, setPreviousDataHash] = React.useState('');
   
-  // Load last update time and data hash from localStorage
+  // Load last update time and data hash from localStorage AND GitHub
   React.useEffect(() => {
-    const savedTime = localStorage.getItem('french-dashboard-update-time');
-    const savedDataHash = localStorage.getItem('french-dashboard-data-hash');
+    const loadUpdateTime = async () => {
+      try {
+        // Сначала попробуем загрузить из GitHub файла
+        const githubResponse = await fetch('./update-log.json');
+        if (githubResponse.ok) {
+          const githubData = await githubResponse.json();
+          setLastUpdateTime(new Date(githubData.lastUpdateTime));
+          console.log('Loaded last update time from GitHub file:', new Date(githubData.lastUpdateTime));
+        } else {
+          throw new Error('GitHub file not accessible');
+        }
+      } catch (error) {
+        console.log('GitHub file not available, using localStorage');
+        
+        // Fallback к localStorage
+        const savedTime = localStorage.getItem('french-dashboard-update-time');
+        const savedDataHash = localStorage.getItem('french-dashboard-data-hash');
+        
+        if (savedTime) {
+          setLastUpdateTime(new Date(savedTime));
+          console.log('Loaded last update time from localStorage:', new Date(savedTime));
+        } else {
+          // First time - set to yesterday
+          setLastUpdateTime(new Date(Date.now() - 24 * 60 * 60 * 1000));
+        }
+        
+        if (savedDataHash) {
+          console.log('Loaded previous data hash from localStorage');
+          setPreviousDataHash(savedDataHash);
+        }
+      }
+      
+      // Проверить наличие GitHub токена
+      const githubToken = localStorage.getItem('github-token');
+      if (!githubToken) {
+        console.log('GitHub token not found. To enable GitHub API integration, run:');
+        console.log('localStorage.setItem("github-token", "your_token_here")');
+      }
+    };
     
-    if (savedTime) {
-      setLastUpdateTime(new Date(savedTime));
-      console.log('Loaded last update time from localStorage:', new Date(savedTime));
-    } else {
-      // First time - set to yesterday
-      setLastUpdateTime(new Date(Date.now() - 24 * 60 * 60 * 1000));
-    }
-    
-    if (savedDataHash) {
-      console.log('Loaded previous data hash from localStorage');
-      setPreviousDataHash(savedDataHash);
-    }
+    loadUpdateTime();
   }, []);
   
   // Google Sheets API settings
@@ -209,6 +294,10 @@ const FrenchChallengeDashboard = () => {
           const now = new Date();
           setLastUpdateTime(now);
           saveUpdateTime(now);
+          
+          // Также обновить GitHub файл
+          updateGitHubLog();
+          
           console.log('Data changed! Time updated to now');
         } else {
           console.log('No changes detected - keeping existing time');

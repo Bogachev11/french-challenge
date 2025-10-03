@@ -118,8 +118,8 @@ const saveUpdateTime = (time) => {
   console.log('Update time:', time);
 };
 
-// GitHub API function to update log file
-const updateGitHubLog = async (newDataHash) => {
+// GitHub API function to update files
+const updateGitHubFiles = async (newDataHash) => {
   try {
     const GITHUB_TOKEN = window.API_TOKEN;
     const REPO_OWNER = 'bogachev-al';
@@ -127,36 +127,69 @@ const updateGitHubLog = async (newDataHash) => {
     
     // Если нет токена, просто логируем
     if (!GITHUB_TOKEN) {
-      console.log('🔧 No API_TOKEN available - cannot update GitHub file');
+      console.log('🔧 No API_TOKEN available - cannot update GitHub files');
       return;
     }
     
     console.log('🚀 GitHub API: Starting update process...');
     
     const now = new Date();
-    const updateData = {
+    
+    // 1. Обновляем update-log.json (только время)
+    const updateLogData = {
       lastUpdateTime: now.toISOString(),
       commitMessage: `Data updated at ${now.toLocaleDateString('ru-RU')}, ${now.toLocaleTimeString('ru-RU')}`,
-      location: "GitHub repository",
-      dataHash: newDataHash
+      location: "GitHub repository"
     };
 
-    // Получаем текущий файл для получения SHA
-    const getResponse = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/update-log.json`, {
+    // Получаем SHA для update-log.json
+    const getLogResponse = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/update-log.json`, {
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
         'Accept': 'application/vnd.github.v3+json'
       }
     });
 
-    let sha = null;
-    if (getResponse.ok) {
-      const fileData = await getResponse.json();
-      sha = fileData.sha;
+    let logSha = null;
+    if (getLogResponse.ok) {
+      const fileData = await getLogResponse.json();
+      logSha = fileData.sha;
     }
 
-    // Обновляем файл
-    const updateResponse = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/update-log.json`, {
+    // Обновляем update-log.json
+    const updateLogResponse = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/update-log.json`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: `Update time at ${now.toISOString()}`,
+        content: btoa(JSON.stringify(updateLogData, null, 2)),
+        sha: logSha
+      })
+    });
+
+    // 2. Обновляем data-hash.json (хэш данных)
+    const hashData = { dataHash: newDataHash };
+
+    // Получаем SHA для data-hash.json
+    const getHashResponse = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/data-hash.json`, {
+      headers: {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    let hashSha = null;
+    if (getHashResponse.ok) {
+      const fileData = await getHashResponse.json();
+      hashSha = fileData.sha;
+    }
+
+    // Обновляем data-hash.json
+    const updateHashResponse = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/data-hash.json`, {
       method: 'PUT',
       headers: {
         'Authorization': `token ${GITHUB_TOKEN}`,
@@ -165,17 +198,15 @@ const updateGitHubLog = async (newDataHash) => {
       },
       body: JSON.stringify({
         message: `Update data hash at ${now.toISOString()}`,
-        content: btoa(JSON.stringify(updateData, null, 2)),
-        sha: sha
+        content: btoa(JSON.stringify(hashData, null, 2)),
+        sha: hashSha
       })
     });
 
-    if (updateResponse.ok) {
-      const result = await updateResponse.json();
-      console.log('✅ GitHub log updated successfully:', result.commit.message);
+    if (updateLogResponse.ok && updateHashResponse.ok) {
+      console.log('✅ GitHub files updated successfully');
     } else {
-      const errorText = await updateResponse.text();
-      console.error('❌ GitHub update failed:', errorText);
+      console.error('❌ GitHub update failed');
     }
   } catch (error) {
     console.error('GitHub API error:', error);
@@ -195,36 +226,36 @@ const FrenchChallengeDashboard = () => {
   const [lastUpdateTime, setLastUpdateTime] = React.useState(new Date(Date.now() - 24 * 60 * 60 * 1000)); // Default to yesterday
   const [previousDataHash, setPreviousDataHash] = React.useState('');
   
-  // Load last update time and data hash from GitHub file
+  // Load last update time and data hash from files
   React.useEffect(() => {
-    const loadUpdateTime = async () => {
+    const loadData = async () => {
       try {
-        // Загрузить из GitHub файла
+        // Загрузить время обновления
         const githubResponse = await fetch('./update-log.json');
         if (githubResponse.ok) {
           const githubData = await githubResponse.json();
           setLastUpdateTime(new Date(githubData.lastUpdateTime));
-          
-          // Также загрузить сохраненный хеш данных, если есть
-          if (githubData.dataHash && githubData.dataHash.length > 0) {
-            setPreviousDataHash(githubData.dataHash);
-            console.log('Loaded previous data hash from file:', githubData.dataHash.substring(0, 50) + '...');
-          } else {
-            console.log('No previous data hash found in file');
-          }
-          
           console.log('Loaded last update time from GitHub file:', new Date(githubData.lastUpdateTime));
-        } else {
-          throw new Error('GitHub file not accessible');
+        }
+        
+        // Загрузить хэш данных
+        const hashResponse = await fetch('./data-hash.json');
+        if (hashResponse.ok) {
+          const hashData = await hashResponse.json();
+          if (hashData.dataHash && hashData.dataHash.length > 0) {
+            setPreviousDataHash(hashData.dataHash);
+            console.log('✅ Loaded previous data hash from file:', hashData.dataHash.substring(0, 50) + '...');
+          } else {
+            console.log('❌ No previous data hash found in file');
+          }
         }
       } catch (error) {
-        console.log('GitHub file not available, using default time');
-        // First time - set to yesterday
+        console.log('Files not available, using defaults');
         setLastUpdateTime(new Date(Date.now() - 24 * 60 * 60 * 1000));
       }
     };
     
-    loadUpdateTime();
+    loadData();
   }, []);
   
   // Google Sheets API settings
@@ -281,20 +312,22 @@ const FrenchChallengeDashboard = () => {
         console.log('Hash comparison - Equal:', newDataHash === previousDataHash);
         console.log('Previous hash exists:', !!previousDataHash);
         
-        // Update time if data changed
-        if (newDataHash !== previousDataHash) {
+        // Update time only if we have previous data and it changed
+        if (previousDataHash && newDataHash !== previousDataHash) {
           // Data changed - update time
           console.log('🔄 DATA CHANGED - updating time and calling GitHub API');
           const now = new Date();
           setLastUpdateTime(now);
           saveUpdateTime(now);
           
-          // Обновить GitHub файл через API
-          updateGitHubLog(newDataHash);
+          // Обновить GitHub файлы через API
+          updateGitHubFiles(newDataHash);
           
           console.log('Data changed! Time updated to now');
-        } else {
+        } else if (previousDataHash) {
           console.log('✅ No changes detected - keeping existing time');
+        } else {
+          console.log('🚀 First load - not updating time');
         }
         
         // Always save current data hash for next comparison

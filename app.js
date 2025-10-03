@@ -128,6 +128,7 @@ const updateGitHubFiles = async (newDataHash) => {
     // Если нет токена, просто логируем
     if (!GITHUB_TOKEN) {
       console.log('🔧 No API_TOKEN available - cannot update GitHub files');
+      console.log('🔧 Would update data-hash.json with:', newDataHash.substring(0, 100) + '...');
       return;
     }
     
@@ -336,6 +337,7 @@ const FrenchChallengeDashboard = () => {
           console.log('✅ No changes detected - keeping existing time');
         } else {
           console.log('🚀 First load - not updating time');
+          console.log('🚀 Calling updateGitHubFiles with hash:', newDataHash.substring(0, 100) + '...');
           // При первом запуске сохраняем хэш в файл
           updateGitHubFiles(newDataHash);
         }

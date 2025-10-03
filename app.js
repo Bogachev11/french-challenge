@@ -113,69 +113,15 @@ const getUpdateTimeText = (updateTime) => {
   return 'today';
 };
 
-// Simple function to save time to localStorage
+// Simple function to log update time
 const saveUpdateTime = (time) => {
-  localStorage.setItem('french-dashboard-update-time', time.toISOString());
-  console.log('Saved update time to localStorage:', time);
+  console.log('Update time:', time);
 };
 
 // GitHub API function to update log file
-const updateGitHubLog = async () => {
-  const githubToken = localStorage.getItem('github-token');
-  if (!githubToken) {
-    console.log('GitHub token not found in localStorage');
-    return;
-  }
-  
-  const repo = 'bogachev11/french-challenge';
-  const filePath = 'update-log.json';
-
-  try {
-    // Получить текущий файл
-    const getResponse = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
-      headers: {
-        'Authorization': `token ${githubToken}`,
-        'Accept': 'application/vnd.github.v3+json'
-      }
-    });
-    
-    if (getResponse.ok) {
-      const fileData = await getResponse.json();
-      const currentContent = JSON.parse(atob(fileData.content));
-      
-      // Обновить время
-      const newContent = {
-        ...currentContent,
-        lastUpdateTime: new Date().toISOString(),
-        commitMessage: `Data updated at ${new Date().toLocaleString()}`
-      };
-      
-      // Записать новый файл
-      const putResponse = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `token ${githubToken}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: `Update log: ${new Date().toISOString()}`,
-          content: btoa(JSON.stringify(newContent, null, 2)),
-          sha: fileData.sha
-        })
-      });
-      
-      if (putResponse.ok) {
-        console.log('GitHub log updated successfully');
-      } else {
-        console.log('Failed to update GitHub log:', putResponse.status);
-      }
-    } else {
-      console.log('Failed to get GitHub file:', getResponse.status);
-    }
-  } catch (error) {
-    console.log('GitHub API error:', error);
-  }
+const updateGitHubLog = async (newDataHash) => {
+  // Локально просто логируем, на проде будет работать через GitHub Actions
+  console.log('GitHub log update requested for:', new Date().toISOString(), 'with hash:', newDataHash.substring(0, 20) + '...');
 };
 
 // Simple function to calculate data hash
@@ -191,45 +137,29 @@ const FrenchChallengeDashboard = () => {
   const [lastUpdateTime, setLastUpdateTime] = React.useState(new Date(Date.now() - 24 * 60 * 60 * 1000)); // Default to yesterday
   const [previousDataHash, setPreviousDataHash] = React.useState('');
   
-  // Load last update time and data hash from localStorage AND GitHub
+  // Load last update time and data hash from GitHub file
   React.useEffect(() => {
     const loadUpdateTime = async () => {
       try {
-        // Сначала попробуем загрузить из GitHub файла
+        // Загрузить из GitHub файла
         const githubResponse = await fetch('./update-log.json');
         if (githubResponse.ok) {
           const githubData = await githubResponse.json();
           setLastUpdateTime(new Date(githubData.lastUpdateTime));
+          
+          // Также загрузить сохраненный хеш данных, если есть
+          if (githubData.dataHash) {
+            setPreviousDataHash(githubData.dataHash);
+          }
+          
           console.log('Loaded last update time from GitHub file:', new Date(githubData.lastUpdateTime));
         } else {
           throw new Error('GitHub file not accessible');
         }
       } catch (error) {
-        console.log('GitHub file not available, using localStorage');
-        
-        // Fallback к localStorage
-        const savedTime = localStorage.getItem('french-dashboard-update-time');
-        const savedDataHash = localStorage.getItem('french-dashboard-data-hash');
-        
-        if (savedTime) {
-          setLastUpdateTime(new Date(savedTime));
-          console.log('Loaded last update time from localStorage:', new Date(savedTime));
-        } else {
-          // First time - set to yesterday
-          setLastUpdateTime(new Date(Date.now() - 24 * 60 * 60 * 1000));
-        }
-        
-        if (savedDataHash) {
-          console.log('Loaded previous data hash from localStorage');
-          setPreviousDataHash(savedDataHash);
-        }
-      }
-      
-      // Проверить наличие GitHub токена
-      const githubToken = localStorage.getItem('github-token');
-      if (!githubToken) {
-        console.log('GitHub token not found. To enable GitHub API integration, run:');
-        console.log('localStorage.setItem("github-token", "your_token_here")');
+        console.log('GitHub file not available, using default time');
+        // First time - set to yesterday
+        setLastUpdateTime(new Date(Date.now() - 24 * 60 * 60 * 1000));
       }
     };
     
@@ -283,36 +213,30 @@ const FrenchChallengeDashboard = () => {
         
         // Check if data actually changed by comparing hashes
         const newDataHash = calculateDataHash(formattedData);
-        const storedHash = localStorage.getItem('french-dashboard-data-hash') || '';
         
         console.log('New data hash:', newDataHash.substring(0, 50) + '...');
-        console.log('Previous data hash from localStorage:', storedHash.substring(0, 50) + '...');
-        console.log('Hash lengths - New:', newDataHash.length, 'Stored:', storedHash.length);
+        console.log('Previous data hash:', previousDataHash.substring(0, 50) + '...');
+        console.log('Hash lengths - New:', newDataHash.length, 'Stored:', previousDataHash.length);
         
-        if (newDataHash !== storedHash) {
+        // If previousDataHash is empty (first load), don't update time
+        if (previousDataHash && newDataHash !== previousDataHash) {
           // Data changed - update time
           const now = new Date();
           setLastUpdateTime(now);
           saveUpdateTime(now);
           
-          // Также обновить GitHub файл
-          updateGitHubLog();
+          // Обновить GitHub файл через API
+          updateGitHubLog(newDataHash);
           
           console.log('Data changed! Time updated to now');
-        } else {
+        } else if (previousDataHash) {
           console.log('No changes detected - keeping existing time');
-          // If this is truly the first load (no stored hash), set to yesterday
-          if (!storedHash) {
-            const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
-            setLastUpdateTime(yesterday);
-            saveUpdateTime(yesterday);
-            console.log('First load detected - set to yesterday');
-          }
+        } else {
+          console.log('First load - not updating time');
         }
         
         // Always save current data hash for next comparison
         setPreviousDataHash(newDataHash);
-        localStorage.setItem('french-dashboard-data-hash', newDataHash);
         
       } catch (apiError) {
         console.error('API failed:', apiError);

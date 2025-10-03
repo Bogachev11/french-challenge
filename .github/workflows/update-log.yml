@@ -1,0 +1,42 @@
+name: Update Log
+
+on:
+  workflow_dispatch:
+    inputs:
+      update_time:
+        description: 'Update time (ISO string)'
+        required: true
+        default: ''
+
+jobs:
+  update-log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.API_TOKEN }}
+      
+      - name: Update log file
+        run: |
+          if [ -n "${{ github.event.inputs.update_time }}" ]; then
+            UPDATE_TIME="${{ github.event.inputs.update_time }}"
+          else
+            UPDATE_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
+          fi
+          
+          echo "Updating log with time: $UPDATE_TIME"
+          
+          cat > update-log.json << EOF
+          {
+            "lastUpdateTime": "$UPDATE_TIME",
+            "commitMessage": "Data updated at $(date)",
+            "location": "GitHub repository"
+          }
+          EOF
+          
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add update-log.json
+          git commit -m "Update log: $UPDATE_TIME" || exit 0
+          git push

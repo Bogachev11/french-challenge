@@ -121,13 +121,14 @@ const saveUpdateTime = (time) => {
 // GitHub API function to update log file
 const updateGitHubLog = async (newDataHash) => {
   try {
-    const GITHUB_TOKEN = process.env.API_TOKEN;
+    const GITHUB_TOKEN = window.API_TOKEN || process?.env?.API_TOKEN;
     const REPO_OWNER = 'bogachev-al';
     const REPO_NAME = '20250920_a2_b1_dash_v2';
     
     // Если нет токена (локальная разработка), просто логируем
     if (!GITHUB_TOKEN) {
-      console.log('GitHub log update requested for:', new Date().toISOString(), 'with hash:', newDataHash.substring(0, 20) + '...');
+      console.log('Local development: GitHub log update requested for:', new Date().toISOString(), 'with hash:', newDataHash.substring(0, 20) + '...');
+      console.log('Run "git pull" to update update-log.json locally');
       return;
     }
     
@@ -272,9 +273,9 @@ const FrenchChallengeDashboard = () => {
         console.log('Previous data hash:', previousDataHash.substring(0, 50) + '...');
         console.log('Hash lengths - New:', newDataHash.length, 'Stored:', previousDataHash.length);
         
-        // If data changed (or first load with actual data), update time
-        if (!previousDataHash || newDataHash !== previousDataHash) {
-          // Data changed or first load - update time
+        // Only update time if data actually changed (not on first load)
+        if (previousDataHash && newDataHash !== previousDataHash) {
+          // Data changed - update time
           const now = new Date();
           setLastUpdateTime(now);
           saveUpdateTime(now);
@@ -282,13 +283,11 @@ const FrenchChallengeDashboard = () => {
           // Обновить GitHub файл через API
           updateGitHubLog(newDataHash);
           
-          if (previousDataHash) {
-            console.log('Data changed! Time updated to now');
-          } else {
-            console.log('First load with data - updating time');
-          }
-        } else {
+          console.log('Data changed! Time updated to now');
+        } else if (previousDataHash) {
           console.log('No changes detected - keeping existing time');
+        } else {
+          console.log('First load - not updating time');
         }
         
         // Always save current data hash for next comparison

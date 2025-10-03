@@ -281,8 +281,8 @@ const FrenchChallengeDashboard = () => {
         console.log('Hash comparison - Equal:', newDataHash === previousDataHash);
         console.log('Previous hash exists:', !!previousDataHash);
         
-        // Only update time if data actually changed (not on first load)
-        if (previousDataHash && newDataHash !== previousDataHash) {
+        // Update time if data changed
+        if (newDataHash !== previousDataHash) {
           // Data changed - update time
           console.log('🔄 DATA CHANGED - updating time and calling GitHub API');
           const now = new Date();
@@ -293,10 +293,8 @@ const FrenchChallengeDashboard = () => {
           updateGitHubLog(newDataHash);
           
           console.log('Data changed! Time updated to now');
-        } else if (previousDataHash) {
-          console.log('✅ No changes detected - keeping existing time');
         } else {
-          console.log('🚀 First load - not updating time');
+          console.log('✅ No changes detected - keeping existing time');
         }
         
         // Always save current data hash for next comparison
@@ -324,7 +322,7 @@ const FrenchChallengeDashboard = () => {
     };
     
     fetchData();
-  }, [previousDataHash]);
+  }, []);
   
   // Используем данные из Google Sheets
   const testData = sheetData;

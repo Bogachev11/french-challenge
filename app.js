@@ -206,8 +206,11 @@ const FrenchChallengeDashboard = () => {
           setLastUpdateTime(new Date(githubData.lastUpdateTime));
           
           // Также загрузить сохраненный хеш данных, если есть
-          if (githubData.dataHash) {
+          if (githubData.dataHash && githubData.dataHash.length > 0) {
             setPreviousDataHash(githubData.dataHash);
+            console.log('Loaded previous data hash from file:', githubData.dataHash.substring(0, 50) + '...');
+          } else {
+            console.log('No previous data hash found in file');
           }
           
           console.log('Loaded last update time from GitHub file:', new Date(githubData.lastUpdateTime));

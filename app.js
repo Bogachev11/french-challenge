@@ -128,6 +128,8 @@ const updateGitHubFiles = async (newDataHash) => {
     // Если нет токена, просто логируем
     if (!GITHUB_TOKEN) {
       console.log('🔧 No API_TOKEN available - cannot update GitHub files');
+      console.log('🔧 window.API_TOKEN:', window.API_TOKEN);
+      console.log('🔧 process.env.API_TOKEN:', process?.env?.API_TOKEN);
       return;
     }
     

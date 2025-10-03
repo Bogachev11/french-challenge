@@ -127,10 +127,12 @@ const updateGitHubLog = async (newDataHash) => {
     
     // Если нет токена (локальная разработка), просто логируем
     if (!GITHUB_TOKEN) {
-      console.log('Local development: GitHub log update requested for:', new Date().toISOString(), 'with hash:', newDataHash.substring(0, 20) + '...');
+      console.log('🔧 Local development: GitHub log update requested for:', new Date().toISOString(), 'with hash:', newDataHash.substring(0, 20) + '...');
       console.log('Run "git pull" to update update-log.json locally');
       return;
     }
+    
+    console.log('🚀 GitHub API: Starting update process...');
     
     const now = new Date();
     const updateData = {
@@ -170,9 +172,10 @@ const updateGitHubLog = async (newDataHash) => {
     });
 
     if (updateResponse.ok) {
-      console.log('GitHub log updated successfully');
+      console.log('✅ GitHub log updated successfully');
     } else {
-      console.error('GitHub update failed:', await updateResponse.text());
+      const errorText = await updateResponse.text();
+      console.error('❌ GitHub update failed:', errorText);
     }
   } catch (error) {
     console.error('GitHub API error:', error);
@@ -272,10 +275,13 @@ const FrenchChallengeDashboard = () => {
         console.log('New data hash:', newDataHash.substring(0, 50) + '...');
         console.log('Previous data hash:', previousDataHash.substring(0, 50) + '...');
         console.log('Hash lengths - New:', newDataHash.length, 'Stored:', previousDataHash.length);
+        console.log('Hash comparison - Equal:', newDataHash === previousDataHash);
+        console.log('Previous hash exists:', !!previousDataHash);
         
         // Only update time if data actually changed (not on first load)
         if (previousDataHash && newDataHash !== previousDataHash) {
           // Data changed - update time
+          console.log('🔄 DATA CHANGED - updating time and calling GitHub API');
           const now = new Date();
           setLastUpdateTime(now);
           saveUpdateTime(now);
@@ -285,9 +291,9 @@ const FrenchChallengeDashboard = () => {
           
           console.log('Data changed! Time updated to now');
         } else if (previousDataHash) {
-          console.log('No changes detected - keeping existing time');
+          console.log('✅ No changes detected - keeping existing time');
         } else {
-          console.log('First load - not updating time');
+          console.log('🚀 First load - not updating time');
         }
         
         // Always save current data hash for next comparison

@@ -324,7 +324,7 @@ const FrenchChallengeDashboard = () => {
     };
     
     fetchData();
-  }, []);
+  }, [previousDataHash]);
   
   // Используем данные из Google Sheets
   const testData = sheetData;

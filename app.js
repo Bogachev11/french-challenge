@@ -121,14 +121,13 @@ const saveUpdateTime = (time) => {
 // GitHub API function to update log file
 const updateGitHubLog = async (newDataHash) => {
   try {
-    const GITHUB_TOKEN = window.API_TOKEN || process?.env?.API_TOKEN;
+    const GITHUB_TOKEN = window.API_TOKEN;
     const REPO_OWNER = 'bogachev-al';
     const REPO_NAME = '20250920_a2_b1_dash_v2';
     
-    // Если нет токена (локальная разработка), просто логируем
+    // Если нет токена, просто логируем
     if (!GITHUB_TOKEN) {
-      console.log('🔧 Local development: GitHub log update requested for:', new Date().toISOString(), 'with hash:', newDataHash.substring(0, 20) + '...');
-      console.log('Run "git pull" to update update-log.json locally');
+      console.log('🔧 No API_TOKEN available - cannot update GitHub file');
       return;
     }
     
@@ -172,7 +171,8 @@ const updateGitHubLog = async (newDataHash) => {
     });
 
     if (updateResponse.ok) {
-      console.log('✅ GitHub log updated successfully');
+      const result = await updateResponse.json();
+      console.log('✅ GitHub log updated successfully:', result.commit.message);
     } else {
       const errorText = await updateResponse.text();
       console.error('❌ GitHub update failed:', errorText);

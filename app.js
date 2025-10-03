@@ -286,6 +286,7 @@ const FrenchChallengeDashboard = () => {
         
         const data = await response.json();
         console.log('API data:', data);
+        console.log('Raw values:', data.values);
         
         const formattedData = data.values
           .filter(row => row.length >= 2 && row[1])
@@ -302,6 +303,8 @@ const FrenchChallengeDashboard = () => {
         
         setSheetData(formattedData);
         setError(null);
+        
+        console.log('Formatted data:', formattedData);
         
         // Check if data actually changed by comparing hashes
         const newDataHash = calculateDataHash(formattedData);
@@ -328,6 +331,8 @@ const FrenchChallengeDashboard = () => {
           console.log('✅ No changes detected - keeping existing time');
         } else {
           console.log('🚀 First load - not updating time');
+          // При первом запуске сохраняем хэш в файл
+          updateGitHubFiles(newDataHash);
         }
         
         // Always save current data hash for next comparison
@@ -336,26 +341,13 @@ const FrenchChallengeDashboard = () => {
       } catch (apiError) {
         console.error('API failed:', apiError);
         setError(`Loading error: ${apiError.message}`);
-        // Fallback к тестовым данным
-        setSheetData([
-          { day: 1, completedLessons: "1", attemptedLessons: "", theoryTime: 15, homeworkTime: 10, prolingvoTime: 5, otherTime: 0, mood: 4 },
-          { day: 2, completedLessons: "2", attemptedLessons: "3", theoryTime: 20, homeworkTime: 12, prolingvoTime: 8, otherTime: 0, mood: 4 },
-          { day: 3, completedLessons: "3", attemptedLessons: "", theoryTime: 25, homeworkTime: 28, prolingvoTime: 10, otherTime: 30, mood: 5 },
-          { day: 4, completedLessons: "", attemptedLessons: "5,6", theoryTime: 40, homeworkTime: 0, prolingvoTime: 0, otherTime: 0, mood: 2 },
-          { day: 5, completedLessons: "4,5", attemptedLessons: "", theoryTime: 15, homeworkTime: 45, prolingvoTime: 12, otherTime: 0, mood: 4 },
-          { day: 6, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, prolingvoTime: 0, otherTime: 0, mood: 2 },
-          { day: 7, completedLessons: "6", attemptedLessons: "", theoryTime: 10, homeworkTime: 0, prolingvoTime: 6, otherTime: 0, mood: 3 },
-          { day: 8, completedLessons: "7", attemptedLessons: "", theoryTime: 0, homeworkTime: 40, prolingvoTime: 8, otherTime: 0, mood: 4 },
-          { day: 9, completedLessons: "", attemptedLessons: "", theoryTime: 0, homeworkTime: 0, prolingvoTime: 0, otherTime: 0, mood: 2 },
-          { day: 10, completedLessons: "8,9,10", attemptedLessons: "", theoryTime: 10, homeworkTime: 17, prolingvoTime: 7, otherTime: 0, mood: 5 }
-        ]);
       } finally {
         setLoading(false);
       }
     };
     
     fetchData();
-  }, []);
+  }, [previousDataHash]);
   
   // Используем данные из Google Sheets
   const testData = sheetData;

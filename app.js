@@ -224,7 +224,7 @@ const FrenchChallengeDashboard = () => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   const [lastUpdateTime, setLastUpdateTime] = React.useState(new Date(Date.now() - 24 * 60 * 60 * 1000)); // Default to yesterday
-  const [previousDataHash, setPreviousDataHash] = React.useState('');
+  const [previousDataHash, setPreviousDataHash] = React.useState('loading');
   
   // Load last update time and data hash from files
   React.useEffect(() => {
@@ -247,11 +247,13 @@ const FrenchChallengeDashboard = () => {
             console.log('✅ Loaded previous data hash from file:', hashData.dataHash.substring(0, 50) + '...');
           } else {
             console.log('❌ No previous data hash found in file');
+            setPreviousDataHash('');
           }
         }
       } catch (error) {
         console.log('Files not available, using defaults');
         setLastUpdateTime(new Date(Date.now() - 24 * 60 * 60 * 1000));
+        setPreviousDataHash('');
       }
     };
     
@@ -265,6 +267,9 @@ const FrenchChallengeDashboard = () => {
   
   // Load data from Google Sheets
   React.useEffect(() => {
+    // Don't fetch data until we have loaded the previous hash
+    if (previousDataHash === 'loading') return;
+    
     const fetchData = async () => {
       try {
         setLoading(true);

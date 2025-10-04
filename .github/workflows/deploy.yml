@@ -19,6 +19,10 @@ jobs:
     - name: Setup Pages
       uses: actions/configure-pages@v4
       
+    - name: Inject API token
+      run: |
+        sed -i "s/window.API_TOKEN = undefined/window.API_TOKEN = '${{ secrets.API_TOKEN }}'/g" index.html
+        
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:

@@ -121,7 +121,7 @@ const saveUpdateTime = (time) => {
 // GitHub API function to update files
 const updateGitHubFiles = async (newDataHash) => {
   try {
-    const GITHUB_TOKEN = window.API_TOKEN;
+    const GITHUB_TOKEN = window.API_TOKEN || process?.env?.REACT_APP_API_TOKEN;
     const REPO_OWNER = 'bogachev-al';
     const REPO_NAME = '20250920_a2_b1_dash_v2';
     
@@ -129,7 +129,7 @@ const updateGitHubFiles = async (newDataHash) => {
     if (!GITHUB_TOKEN) {
       console.log('🔧 No API_TOKEN available - cannot update GitHub files');
       console.log('🔧 window.API_TOKEN:', window.API_TOKEN);
-      console.log('🔧 process.env.API_TOKEN:', process?.env?.API_TOKEN);
+      console.log('🔧 process.env.REACT_APP_API_TOKEN:', process?.env?.REACT_APP_API_TOKEN);
       return;
     }
     

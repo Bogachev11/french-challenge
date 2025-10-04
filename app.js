@@ -321,6 +321,9 @@ const FrenchChallengeDashboard = () => {
         console.log('Hash comparison - Equal:', newDataHash === previousDataHash);
         console.log('Previous hash exists:', !!previousDataHash);
         
+        // Always save current data hash for next comparison first
+        setPreviousDataHash(newDataHash);
+        
         // Update time only if we have previous data and it changed
         if (previousDataHash && newDataHash !== previousDataHash) {
           // Data changed - update time
@@ -340,9 +343,6 @@ const FrenchChallengeDashboard = () => {
           // При первом запуске сохраняем хэш в файл
           updateGitHubFiles(newDataHash);
         }
-        
-        // Always save current data hash for next comparison
-        setPreviousDataHash(newDataHash);
         
       } catch (apiError) {
         console.error('API failed:', apiError);

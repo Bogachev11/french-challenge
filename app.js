@@ -122,8 +122,8 @@ const saveUpdateTime = (time) => {
 const updateGitHubFiles = async (newDataHash) => {
   try {
     const GITHUB_TOKEN = window.API_TOKEN || process?.env?.REACT_APP_API_TOKEN;
-    const REPO_OWNER = 'bogachev-al';
-    const REPO_NAME = '20250920_a2_b1_dash_v2';
+    const REPO_OWNER = 'bogachev11';
+    const REPO_NAME = 'french-challenge';
     
     // Если нет токена, просто логируем
     if (!GITHUB_TOKEN) {

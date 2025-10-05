@@ -28,7 +28,19 @@ jobs:
           
           # Получить данные из Google Sheets
           RESPONSE=$(curl -s "https://sheets.googleapis.com/v4/spreadsheets/$SHEET_ID/values/$RANGE?key=$API_KEY")
-          DATA_HASH=$(echo "$RESPONSE" | jq -r '.values // [] | tostring')
+          
+          # Преобразовать данные в тот же формат, что и в приложении
+          DATA_HASH=$(echo "$RESPONSE" | jq -r '
+            .values // [] | 
+            map({
+              day: (.[0] | tonumber),
+              completedLessons: (.[1] // "0"),
+              attemptedLessons: (.[2] // "0"), 
+              mood: (.[7] // ""),
+              notes: (.[8] // "")
+            }) |
+            tostring
+          ')
           
           # Обновить файл
           cat > update-log.json << EOF

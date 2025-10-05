@@ -28,6 +28,7 @@ jobs:
           
           # Получить данные из Google Sheets
           RESPONSE=$(curl -s "https://sheets.googleapis.com/v4/spreadsheets/$SHEET_ID/values/$RANGE?key=$API_KEY")
+          echo "Google Sheets API response: $RESPONSE"
           
           # Преобразовать данные в тот же формат, что и в приложении
           DATA_HASH=$(echo "$RESPONSE" | jq -r '
@@ -41,6 +42,8 @@ jobs:
             }) |
             tostring
           ')
+          
+          echo "Generated data hash length: ${#DATA_HASH}"
           
           # Обновить файл
           cat > update-log.json << EOF

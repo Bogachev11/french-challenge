@@ -27,7 +27,6 @@ jobs:
       uses: actions/upload-pages-artifact@v3
       with:
         path: '.'
-        exclude: 'node_modules,package.json,package-lock.json,.git,.github'
         
     - name: Deploy to GitHub Pages
       id: deployment

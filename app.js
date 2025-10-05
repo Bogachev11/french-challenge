@@ -137,23 +137,24 @@ const FrenchChallengeDashboard = () => {
   React.useEffect(() => {
     const loadData = async () => {
       try {
-        // Загрузить время обновления
-        const githubResponse = await fetch('./update-log.json');
+        // Загрузить время обновления с кэш-бастингом
+        const githubResponse = await fetch(`./update-log.json?t=${Date.now()}`);
         if (githubResponse.ok) {
           const githubData = await githubResponse.json();
           setLastUpdateTime(new Date(githubData.lastUpdateTime));
-          console.log('Loaded last update time from GitHub file:', new Date(githubData.lastUpdateTime));
+          console.log('✅ Loaded last update time from GitHub file:', new Date(githubData.lastUpdateTime));
+        } else {
+          console.log('❌ Failed to load update-log.json:', githubResponse.status);
         }
         
-        // Загрузить хэш данных
-        const hashResponse = await fetch('./data-hash.json');
-        if (hashResponse.ok) {
-          const hashData = await hashResponse.json();
-          if (hashData.dataHash && hashData.dataHash.length > 0) {
-            setPreviousDataHash(hashData.dataHash);
-            console.log('✅ Loaded previous data hash from file:', hashData.dataHash.substring(0, 50) + '...');
-        } else {
-            console.log('❌ No previous data hash found in file');
+        // Загрузить хэш данных из update-log.json (новый формат)
+        if (githubResponse.ok) {
+          const githubData = await githubResponse.json();
+          if (githubData.dataHash && githubData.dataHash.length > 0) {
+            setPreviousDataHash(githubData.dataHash);
+            console.log('✅ Loaded previous data hash from update-log.json:', githubData.dataHash.substring(0, 50) + '...');
+          } else {
+            console.log('❌ No data hash found in update-log.json');
             setPreviousDataHash('');
           }
         }

@@ -113,10 +113,7 @@ const getUpdateTimeText = (updateTime) => {
   return 'today';
 };
 
-// Simple function to log update time
-const saveUpdateTime = (time) => {
-  console.log('Update time:', time);
-};
+// Time is now managed only through update-log.json file
 
 // GitHub API function to update log file
 const updateGitHubFiles = async (newDataHash) => {
@@ -314,18 +311,15 @@ const FrenchChallengeDashboard = () => {
         
         // Update time only if we have previous data and it changed
         if (previousDataHash && newDataHash !== previousDataHash) {
-          // Data changed - update time
-          console.log('🔄 DATA CHANGED - updating time and calling GitHub API');
-          const now = new Date();
-          setLastUpdateTime(now);
-          saveUpdateTime(now);
+          // Data changed - call GitHub API to update file
+          console.log('🔄 DATA CHANGED - calling GitHub API to update time');
           
-          // Обновить GitHub файл через API
+          // Обновить GitHub файл через API (время обновится в файле)
           updateGitHubFiles(newDataHash);
           
-          console.log('Data changed! Time updated to now');
+          console.log('Data changed! GitHub API will update time in file');
         } else if (previousDataHash) {
-          console.log('✅ No changes detected - keeping existing time');
+          console.log('✅ No changes detected - keeping existing time from file');
         } else {
           console.log('🚀 First load - not updating time');
           // При первом запуске GitHub Actions обновит файл автоматически

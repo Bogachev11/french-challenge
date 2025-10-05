@@ -326,8 +326,11 @@ const FrenchChallengeDashboard = () => {
           console.log('📝 First load - GitHub Actions will update log file automatically');
         }
         
-        // Always save current data hash for next comparison
-        setPreviousDataHash(newDataHash);
+        // Save current data hash for next comparison only if no changes detected
+        // If data changed, wait for GitHub API to update the file first
+        if (!previousDataHash || newDataHash === previousDataHash) {
+          setPreviousDataHash(newDataHash);
+        }
         
       } catch (apiError) {
         console.error('API failed:', apiError);

@@ -137,8 +137,8 @@ const FrenchChallengeDashboard = () => {
   React.useEffect(() => {
     const loadData = async () => {
       try {
-        // Загрузить время обновления с кэш-бастингом
-        const githubResponse = await fetch(`./update-log.json?t=${Date.now()}`);
+        // Загрузить время обновления
+        const githubResponse = await fetch('./update-log.json');
         if (githubResponse.ok) {
           const githubData = await githubResponse.json();
           setLastUpdateTime(new Date(githubData.lastUpdateTime));

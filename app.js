@@ -115,69 +115,9 @@ const getUpdateTimeText = (updateTime) => {
 
 // Time is now managed only through update-log.json file
 
-// GitHub API function to update log file
-const updateGitHubFiles = async (newDataHash) => {
-  try {
-    console.log('🚀 GitHub API: Starting update process...');
-    
-    const githubToken = window.API_TOKEN;
-    if (!githubToken) {
-      console.log('⚠️ No GitHub token available - skipping API update');
-      return;
-    }
-    
-    const now = new Date();
-    
-    // Обновляем update-log.json
-    const updateLogData = {
-      lastUpdateTime: now.toISOString(),
-      commitMessage: `Data updated at ${now.toLocaleDateString('ru-RU')}, ${now.toLocaleTimeString('ru-RU')}`,
-      location: "GitHub repository",
-      dataHash: newDataHash
-    };
+// GitHub API calls removed - time updates handled by GitHub Actions only
 
-    // Получаем SHA для update-log.json
-    const getLogResponse = await fetch(`https://api.github.com/repos/bogachev11/french-challenge/contents/update-log.json`, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json'
-      }
-    });
-
-    let logSha = null;
-    if (getLogResponse.ok) {
-      const fileData = await getLogResponse.json();
-      logSha = fileData.sha;
-    }
-
-    // Обновляем файл
-    const updateLogResponse = await fetch(`https://api.github.com/repos/bogachev11/french-challenge/contents/update-log.json`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${githubToken}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: `Update time at ${now.toISOString()}`,
-        content: btoa(JSON.stringify(updateLogData, null, 2)),
-        sha: logSha
-      })
-    });
-
-    if (updateLogResponse.ok) {
-      console.log('✅ GitHub files updated successfully');
-    } else {
-      console.error('❌ GitHub update failed');
-    }
-  } catch (error) {
-    console.error('GitHub API error:', error);
-  }
-};
-
-// Simple function to calculate data hash
-const calculateDataHash = (data) => {
-  return JSON.stringify(data);
-};
+// Data hash calculation removed - handled by GitHub Actions
 
 const FrenchChallengeDashboard = () => {
   // State for Google Sheets data
@@ -185,48 +125,33 @@ const FrenchChallengeDashboard = () => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   const [lastUpdateTime, setLastUpdateTime] = React.useState(new Date(Date.now() - 24 * 60 * 60 * 1000)); // Default to yesterday
-  const [previousDataHash, setPreviousDataHash] = React.useState('loading');
+  // previousDataHash removed - no longer needed
   
-  // Load last update time and data hash from files
+  // Load last update time from update-log.json
   React.useEffect(() => {
-    const loadData = async () => {
+    const loadUpdateTime = async () => {
       try {
-        console.log('🔄 Attempting to load update-log.json...');
-        const githubResponse = await fetch('./update-log.json');
-        console.log('📡 Response status:', githubResponse.status);
-        console.log('📡 Response ok:', githubResponse.ok);
+        console.log('🔄 Loading update-log.json...');
+        const response = await fetch('./update-log.json');
         
-        if (githubResponse.ok) {
-          const githubData = await githubResponse.json();
-          console.log('📄 Raw file data:', githubData);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('📄 Raw file data:', data);
           
-          if (githubData.lastUpdateTime) {
-            setLastUpdateTime(new Date(githubData.lastUpdateTime));
-            console.log('✅ Loaded last update time from GitHub file:', new Date(githubData.lastUpdateTime));
-          } else {
-            console.log('❌ No lastUpdateTime in file');
-          }
-          
-          if (githubData.dataHash && githubData.dataHash.length > 0) {
-            setPreviousDataHash(githubData.dataHash);
-            console.log('✅ Loaded previous data hash from update-log.json:', githubData.dataHash.substring(0, 50) + '...');
-          } else {
-            console.log('❌ No data hash found in update-log.json');
-            setPreviousDataHash('');
+          if (data.lastUpdateTime) {
+            setLastUpdateTime(new Date(data.lastUpdateTime));
+            console.log('✅ Loaded last update time:', new Date(data.lastUpdateTime));
           }
         } else {
-          console.log('❌ Failed to load update-log.json:', githubResponse.status, githubResponse.statusText);
-          const errorText = await githubResponse.text();
-          console.log('❌ Error response:', errorText);
+          console.log('❌ Failed to load update-log.json:', response.status);
         }
       } catch (error) {
-        console.log('❌ Files not available, using defaults. Error:', error);
+        console.log('❌ Error loading update-log.json:', error);
         setLastUpdateTime(new Date(Date.now() - 24 * 60 * 60 * 1000));
-        setPreviousDataHash('');
       }
     };
     
-    loadData();
+    loadUpdateTime();
   }, []);
   
   // Google Sheets API settings
@@ -236,8 +161,6 @@ const FrenchChallengeDashboard = () => {
   
   // Load data from Google Sheets
   React.useEffect(() => {
-    // Don't fetch data until we have loaded the previous hash
-    if (previousDataHash === 'loading') return;
     
     const fetchData = async () => {
       try {
@@ -278,59 +201,7 @@ const FrenchChallengeDashboard = () => {
         setError(null);
         
         console.log('Formatted data:', formattedData);
-        
-        // Check if data actually changed by comparing hashes
-        const newDataHash = calculateDataHash(formattedData);
-        
-        console.log('🔍 HASH ANALYSIS:');
-        console.log('📊 New data hash length:', newDataHash.length);
-        console.log('📊 Previous data hash length:', previousDataHash.length);
-        console.log('📊 Hash comparison - Equal:', newDataHash === previousDataHash);
-        console.log('📊 Previous hash exists:', !!previousDataHash);
-        console.log('📊 New hash preview:', newDataHash.substring(0, 100) + '...');
-        console.log('📊 Previous hash preview:', previousDataHash.substring(0, 100) + '...');
-        
-        // Debug: show what's different if lengths don't match
-        if (previousDataHash && newDataHash.length !== previousDataHash.length) {
-          console.log('⚠️ Hash lengths differ - investigating...');
-          const newData = JSON.parse(newDataHash);
-          const prevData = JSON.parse(previousDataHash);
-          console.log('New data entries:', newData.length);
-          console.log('Previous data entries:', prevData.length);
-          
-          // Compare each entry to find differences
-          for (let i = 0; i < Math.max(newData.length, prevData.length); i++) {
-            if (!newData[i] || !prevData[i] || JSON.stringify(newData[i]) !== JSON.stringify(prevData[i])) {
-              console.log(`Difference at index ${i}:`, {
-                new: newData[i],
-                prev: prevData[i]
-              });
-            }
-          }
-        }
-        
-        // Update time only if we have previous data and it changed
-        if (previousDataHash && newDataHash !== previousDataHash) {
-          // Data changed - call GitHub API to update file
-          console.log('🔄 DATA CHANGED - calling GitHub API to update time');
-          
-          // Обновить GitHub файл через API (время обновится в файле)
-          updateGitHubFiles(newDataHash);
-          
-          console.log('Data changed! GitHub API will update time in file');
-        } else if (previousDataHash) {
-          console.log('✅ No changes detected - keeping existing time from file');
-        } else {
-          console.log('🚀 First load - not updating time');
-          // При первом запуске GitHub Actions обновит файл автоматически
-          console.log('📝 First load - GitHub Actions will update log file automatically');
-        }
-        
-        // Save current data hash for next comparison only if no changes detected
-        // If data changed, wait for GitHub API to update the file first
-        if (!previousDataHash || newDataHash === previousDataHash) {
-          setPreviousDataHash(newDataHash);
-        }
+        console.log('✅ Data loaded successfully - time managed by GitHub Actions');
         
       } catch (apiError) {
         console.error('API failed:', apiError);
@@ -341,7 +212,7 @@ const FrenchChallengeDashboard = () => {
     };
     
     fetchData();
-  }, [previousDataHash]);
+  }, []);
   
   // Используем данные из Google Sheets
   const testData = sheetData;

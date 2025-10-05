@@ -1,9 +1,6 @@
 name: Auto Update Log
 
 on:
-  schedule:
-    # Запускается каждые 10 минут
-    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 jobs:

@@ -118,7 +118,57 @@ const saveUpdateTime = (time) => {
   console.log('Update time:', time);
 };
 
-// GitHub API function removed - now handled by GitHub Actions
+// GitHub API function to update log file
+const updateGitHubFiles = async (newDataHash) => {
+  try {
+    console.log('🚀 GitHub API: Starting update process...');
+    
+    const now = new Date();
+    
+    // Обновляем update-log.json
+    const updateLogData = {
+      lastUpdateTime: now.toISOString(),
+      commitMessage: `Data updated at ${now.toLocaleDateString('ru-RU')}, ${now.toLocaleTimeString('ru-RU')}`,
+      location: "GitHub repository",
+      dataHash: newDataHash
+    };
+
+    // Получаем SHA для update-log.json
+    const getLogResponse = await fetch(`https://api.github.com/repos/bogachev11/french-challenge/contents/update-log.json`, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    let logSha = null;
+    if (getLogResponse.ok) {
+      const fileData = await getLogResponse.json();
+      logSha = fileData.sha;
+    }
+
+    // Обновляем файл
+    const updateLogResponse = await fetch(`https://api.github.com/repos/bogachev11/french-challenge/contents/update-log.json`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: `Update time at ${now.toISOString()}`,
+        content: btoa(JSON.stringify(updateLogData, null, 2)),
+        sha: logSha
+      })
+    });
+
+    if (updateLogResponse.ok) {
+      console.log('✅ GitHub files updated successfully');
+    } else {
+      console.error('❌ GitHub update failed');
+    }
+  } catch (error) {
+    console.error('GitHub API error:', error);
+  }
+};
 
 // Simple function to calculate data hash
 const calculateDataHash = (data) => {
@@ -263,8 +313,8 @@ const FrenchChallengeDashboard = () => {
           setLastUpdateTime(now);
           saveUpdateTime(now);
           
-          // Обновление GitHub файлов теперь происходит автоматически через GitHub Actions
-          console.log('📝 GitHub files will be updated automatically via GitHub Actions');
+          // Обновить GitHub файл через API
+          updateGitHubFiles(newDataHash);
           
           console.log('Data changed! Time updated to now');
         } else if (previousDataHash) {

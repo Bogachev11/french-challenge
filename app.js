@@ -137,19 +137,22 @@ const FrenchChallengeDashboard = () => {
   React.useEffect(() => {
     const loadData = async () => {
       try {
-        // Загрузить время обновления
+        console.log('🔄 Attempting to load update-log.json...');
         const githubResponse = await fetch('./update-log.json');
-        if (githubResponse.ok) {
-          const githubData = await githubResponse.json();
-          setLastUpdateTime(new Date(githubData.lastUpdateTime));
-          console.log('✅ Loaded last update time from GitHub file:', new Date(githubData.lastUpdateTime));
-        } else {
-          console.log('❌ Failed to load update-log.json:', githubResponse.status);
-        }
+        console.log('📡 Response status:', githubResponse.status);
+        console.log('📡 Response ok:', githubResponse.ok);
         
-        // Загрузить хэш данных из update-log.json (новый формат)
         if (githubResponse.ok) {
           const githubData = await githubResponse.json();
+          console.log('📄 Raw file data:', githubData);
+          
+          if (githubData.lastUpdateTime) {
+            setLastUpdateTime(new Date(githubData.lastUpdateTime));
+            console.log('✅ Loaded last update time from GitHub file:', new Date(githubData.lastUpdateTime));
+          } else {
+            console.log('❌ No lastUpdateTime in file');
+          }
+          
           if (githubData.dataHash && githubData.dataHash.length > 0) {
             setPreviousDataHash(githubData.dataHash);
             console.log('✅ Loaded previous data hash from update-log.json:', githubData.dataHash.substring(0, 50) + '...');
@@ -157,9 +160,13 @@ const FrenchChallengeDashboard = () => {
             console.log('❌ No data hash found in update-log.json');
             setPreviousDataHash('');
           }
+        } else {
+          console.log('❌ Failed to load update-log.json:', githubResponse.status, githubResponse.statusText);
+          const errorText = await githubResponse.text();
+          console.log('❌ Error response:', errorText);
         }
       } catch (error) {
-        console.log('Files not available, using defaults');
+        console.log('❌ Files not available, using defaults. Error:', error);
         setLastUpdateTime(new Date(Date.now() - 24 * 60 * 60 * 1000));
         setPreviousDataHash('');
       }

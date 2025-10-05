@@ -20,12 +20,41 @@ jobs:
           
           echo "Updating log with time: $UPDATE_TIME"
           
-          # Просто обновить время - сравнение данных убрано
+          # Получить данные из Google Sheets
+          SHEET_ID="1h-5h_20vKLjIq9t0YlFf5BvPDMOaKURfbzZuNSyTyZ4"
+          API_KEY="AIzaSyBOewv068qAmujAaU5du_-VqAfqzzjkgGM"
+          RANGE="90_days_list!A2:J1000"
+          
+          RESPONSE=$(curl -s "https://sheets.googleapis.com/v4/spreadsheets/$SHEET_ID/values/$RANGE?key=$API_KEY")
+          echo "Google Sheets API response: $RESPONSE"
+          
+          # Получить текущие данные как JSON
+          CURRENT_DATA=$(echo "$RESPONSE" | jq -c '.values // []')
+          echo "Current data: $CURRENT_DATA"
+          
+          # Проверить, есть ли изменения
+          if [ -f "update-log.json" ]; then
+            # Если файл существует, сравниваем данные
+            OLD_DATA=$(jq -r '.data // []' update-log.json)
+            echo "Old data: $OLD_DATA"
+            
+            if [ "$CURRENT_DATA" = "$OLD_DATA" ]; then
+              echo "No changes detected - skipping update"
+              exit 0
+            else
+              echo "Data changed - updating file"
+            fi
+          else
+            echo "No existing file - creating new one"
+          fi
+          
+          # Обновить файл с новыми данными
           cat > update-log.json << EOF
           {
             "lastUpdateTime": "$UPDATE_TIME",
             "commitMessage": "Auto-updated at $(date)",
-            "location": "GitHub repository"
+            "location": "GitHub repository",
+            "data": $CURRENT_DATA
           }
           EOF
           

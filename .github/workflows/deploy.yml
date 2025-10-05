@@ -22,6 +22,7 @@ jobs:
     - name: Inject API token
       run: |
         sed -i "s/window.API_TOKEN = undefined/window.API_TOKEN = '${{ secrets.API_TOKEN }}'/g" index.html
+        echo "Token injected successfully"
         
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3

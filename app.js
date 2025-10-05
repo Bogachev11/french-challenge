@@ -123,6 +123,12 @@ const updateGitHubFiles = async (newDataHash) => {
   try {
     console.log('🚀 GitHub API: Starting update process...');
     
+    const githubToken = window.API_TOKEN;
+    if (!githubToken) {
+      console.log('⚠️ No GitHub token available - skipping API update');
+      return;
+    }
+    
     const now = new Date();
     
     // Обновляем update-log.json
@@ -150,6 +156,7 @@ const updateGitHubFiles = async (newDataHash) => {
     const updateLogResponse = await fetch(`https://api.github.com/repos/bogachev11/french-challenge/contents/update-log.json`, {
       method: 'PUT',
       headers: {
+        'Authorization': `token ${githubToken}`,
         'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json'
       },

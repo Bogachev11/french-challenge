@@ -2,6 +2,8 @@ name: Auto Update Log
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *' # Every 30 minutes
 
 jobs:
   update-log:
@@ -31,6 +33,21 @@ jobs:
           DATA_HASH=$(echo "$RESPONSE" | jq -r '.values // [] | tostring')
           
           echo "Generated data hash length: ${#DATA_HASH}"
+          
+          # Проверить, изменились ли данные
+          if [ -f "update-log.json" ]; then
+            OLD_HASH=$(jq -r '.dataHash // ""' update-log.json)
+            echo "Old hash length: ${#OLD_HASH}"
+            
+            if [ "$DATA_HASH" = "$OLD_HASH" ]; then
+              echo "No changes detected - skipping update"
+              exit 0
+            else
+              echo "Data changed - updating file"
+            fi
+          else
+            echo "No existing file - creating new one"
+          fi
           
           # Обновить файл
           cat > update-log.json << EOF

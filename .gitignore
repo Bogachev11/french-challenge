@@ -38,3 +38,8 @@ coverage/
 tmp/
 temp/
 
+# OneDrive conflicted copies
+* (LAPTOP-STF80BHL conflicted copy*).*
+* (conflicted copy*).*
+* (conflicted copy*)
+

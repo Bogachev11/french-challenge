@@ -20,42 +20,12 @@ jobs:
           
           echo "Updating log with time: $UPDATE_TIME"
           
-          # Получить текущий хеш данных из Google Sheets
-          SHEET_ID="1h-5h_20vKLjIq9t0YlFf5BvPDMOaKURfbzZuNSyTyZ4"
-          API_KEY="AIzaSyBOewv068qAmujAaU5du_-VqAfqzzjkgGM"
-          RANGE="90_days_list!A2:J1000"
-          
-          # Получить данные из Google Sheets
-          RESPONSE=$(curl -s "https://sheets.googleapis.com/v4/spreadsheets/$SHEET_ID/values/$RANGE?key=$API_KEY")
-          echo "Google Sheets API response: $RESPONSE"
-          
-          # Просто взять сырые данные как строку (как было раньше)
-          DATA_HASH=$(echo "$RESPONSE" | jq -r '.values // [] | tostring')
-          
-          echo "Generated data hash length: ${#DATA_HASH}"
-          
-          # Проверить, изменились ли данные
-          if [ -f "update-log.json" ]; then
-            OLD_HASH=$(jq -r '.dataHash // ""' update-log.json)
-            echo "Old hash length: ${#OLD_HASH}"
-            
-            if [ "$DATA_HASH" = "$OLD_HASH" ]; then
-              echo "No changes detected - skipping update"
-              exit 0
-            else
-              echo "Data changed - updating file"
-            fi
-          else
-            echo "No existing file - creating new one"
-          fi
-          
-          # Обновить файл
+          # Просто обновить время - сравнение данных убрано
           cat > update-log.json << EOF
           {
             "lastUpdateTime": "$UPDATE_TIME",
             "commitMessage": "Auto-updated at $(date)",
-            "location": "GitHub repository",
-            "dataHash": "$DATA_HASH"
+            "location": "GitHub repository"
           }
           EOF
           

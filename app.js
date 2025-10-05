@@ -118,102 +118,7 @@ const saveUpdateTime = (time) => {
   console.log('Update time:', time);
 };
 
-// GitHub API function to update files
-const updateGitHubFiles = async (newDataHash) => {
-  try {
-    const GITHUB_TOKEN = window.API_TOKEN || process?.env?.REACT_APP_API_TOKEN;
-    const REPO_OWNER = 'bogachev11';
-    const REPO_NAME = 'french-challenge';
-    
-    // Если нет токена, просто логируем
-    if (!GITHUB_TOKEN) {
-      console.log('🔧 No API_TOKEN available - cannot update GitHub files');
-      console.log('🔧 window.API_TOKEN:', window.API_TOKEN);
-      console.log('🔧 process.env.REACT_APP_API_TOKEN:', process?.env?.REACT_APP_API_TOKEN);
-      return;
-    }
-    
-    console.log('🚀 GitHub API: Starting update process...');
-    
-    const now = new Date();
-    
-    // 1. Обновляем update-log.json (только время)
-    const updateLogData = {
-      lastUpdateTime: now.toISOString(),
-      commitMessage: `Data updated at ${now.toLocaleDateString('ru-RU')}, ${now.toLocaleTimeString('ru-RU')}`,
-      location: "GitHub repository"
-    };
-
-    // Получаем SHA для update-log.json
-    const getLogResponse = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/update-log.json`, {
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json'
-      }
-    });
-
-    let logSha = null;
-    if (getLogResponse.ok) {
-      const fileData = await getLogResponse.json();
-      logSha = fileData.sha;
-    }
-
-    // Обновляем update-log.json
-    const updateLogResponse = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/update-log.json`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: `Update time at ${now.toISOString()}`,
-        content: btoa(JSON.stringify(updateLogData, null, 2)),
-        sha: logSha
-      })
-    });
-
-    // 2. Обновляем data-hash.json (хэш данных)
-    const hashData = { dataHash: newDataHash };
-
-    // Получаем SHA для data-hash.json
-    const getHashResponse = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/data-hash.json`, {
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json'
-      }
-    });
-
-    let hashSha = null;
-    if (getHashResponse.ok) {
-      const fileData = await getHashResponse.json();
-      hashSha = fileData.sha;
-    }
-
-    // Обновляем data-hash.json
-    const updateHashResponse = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/data-hash.json`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: `Update data hash at ${now.toISOString()}`,
-        content: btoa(JSON.stringify(hashData, null, 2)),
-        sha: hashSha
-      })
-    });
-
-    if (updateLogResponse.ok && updateHashResponse.ok) {
-      console.log('✅ GitHub files updated successfully');
-    } else {
-      console.error('❌ GitHub update failed');
-    }
-  } catch (error) {
-    console.error('GitHub API error:', error);
-  }
-};
+// GitHub API function removed - now handled by GitHub Actions
 
 // Simple function to calculate data hash
 const calculateDataHash = (data) => {
@@ -315,14 +220,29 @@ const FrenchChallengeDashboard = () => {
         // Check if data actually changed by comparing hashes
         const newDataHash = calculateDataHash(formattedData);
         
-        console.log('New data hash:', newDataHash.substring(0, 50) + '...');
-        console.log('Previous data hash:', previousDataHash.substring(0, 50) + '...');
-        console.log('Hash lengths - New:', newDataHash.length, 'Stored:', previousDataHash.length);
+        console.log('New data hash length:', newDataHash.length);
+        console.log('Previous data hash length:', previousDataHash.length);
         console.log('Hash comparison - Equal:', newDataHash === previousDataHash);
         console.log('Previous hash exists:', !!previousDataHash);
         
-        // Always save current data hash for next comparison first
-        setPreviousDataHash(newDataHash);
+        // Debug: show what's different if lengths don't match
+        if (previousDataHash && newDataHash.length !== previousDataHash.length) {
+          console.log('⚠️ Hash lengths differ - investigating...');
+          const newData = JSON.parse(newDataHash);
+          const prevData = JSON.parse(previousDataHash);
+          console.log('New data entries:', newData.length);
+          console.log('Previous data entries:', prevData.length);
+          
+          // Compare each entry to find differences
+          for (let i = 0; i < Math.max(newData.length, prevData.length); i++) {
+            if (!newData[i] || !prevData[i] || JSON.stringify(newData[i]) !== JSON.stringify(prevData[i])) {
+              console.log(`Difference at index ${i}:`, {
+                new: newData[i],
+                prev: prevData[i]
+              });
+            }
+          }
+        }
         
         // Update time only if we have previous data and it changed
         if (previousDataHash && newDataHash !== previousDataHash) {
@@ -332,17 +252,20 @@ const FrenchChallengeDashboard = () => {
           setLastUpdateTime(now);
           saveUpdateTime(now);
           
-          // Обновить GitHub файлы через API
-          updateGitHubFiles(newDataHash);
+          // Обновление GitHub файлов теперь происходит автоматически через GitHub Actions
+          console.log('📝 GitHub files will be updated automatically via GitHub Actions');
           
           console.log('Data changed! Time updated to now');
         } else if (previousDataHash) {
           console.log('✅ No changes detected - keeping existing time');
         } else {
           console.log('🚀 First load - not updating time');
-          // При первом запуске сохраняем хэш в файл
-          updateGitHubFiles(newDataHash);
+          // При первом запуске GitHub Actions обновит файл автоматически
+          console.log('📝 First load - GitHub Actions will update log file automatically');
         }
+        
+        // Always save current data hash for next comparison
+        setPreviousDataHash(newDataHash);
         
       } catch (apiError) {
         console.error('API failed:', apiError);

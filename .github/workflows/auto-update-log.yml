@@ -1,0 +1,53 @@
+name: Auto Update Log
+
+on:
+  schedule:
+    # Запускается каждые 5 минут
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+jobs:
+  update-log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.API_TOKEN }}
+      
+      - name: Update log file
+        run: |
+          UPDATE_TIME=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
+          
+          echo "Updating log with time: $UPDATE_TIME"
+          
+          # Получить текущий хеш данных из Google Sheets
+          SHEET_ID="1h-5h_20vKLjIq9t0YlFf5BvPDMOaKURfbzZuNSyTyZ4"
+          API_KEY="AIzaSyBOewv068qAmujAaU5du_-VqAfqzzjkgGM"
+          RANGE="90_days_list!A2:J1000"
+          
+          # Получить данные из Google Sheets
+          RESPONSE=$(curl -s "https://sheets.googleapis.com/v4/spreadsheets/$SHEET_ID/values/$RANGE?key=$API_KEY")
+          DATA_HASH=$(echo "$RESPONSE" | jq -r '.values // [] | tostring')
+          
+          # Обновить файл
+          cat > update-log.json << EOF
+          {
+            "lastUpdateTime": "$UPDATE_TIME",
+            "commitMessage": "Auto-updated at $(date)",
+            "location": "GitHub repository",
+            "dataHash": "$DATA_HASH"
+          }
+          EOF
+          
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add update-log.json
+          
+          # Коммитить только если есть изменения
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Auto-update log: $UPDATE_TIME" || exit 0
+            git push
+          fi

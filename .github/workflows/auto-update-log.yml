@@ -30,18 +30,8 @@ jobs:
           RESPONSE=$(curl -s "https://sheets.googleapis.com/v4/spreadsheets/$SHEET_ID/values/$RANGE?key=$API_KEY")
           echo "Google Sheets API response: $RESPONSE"
           
-          # Преобразовать данные в тот же формат, что и в приложении
-          DATA_HASH=$(echo "$RESPONSE" | jq -r '
-            .values // [] | 
-            map({
-              day: (.[0] | tonumber),
-              completedLessons: (.[1] // "0"),
-              attemptedLessons: (.[2] // "0"), 
-              mood: (.[7] // ""),
-              notes: (.[8] // "")
-            }) |
-            tostring
-          ')
+          # Просто взять сырые данные как строку (как было раньше)
+          DATA_HASH=$(echo "$RESPONSE" | jq -r '.values // [] | tostring')
           
           echo "Generated data hash length: ${#DATA_HASH}"
           

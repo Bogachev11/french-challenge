@@ -228,10 +228,13 @@ const FrenchChallengeDashboard = () => {
         // Check if data actually changed by comparing hashes
         const newDataHash = calculateDataHash(formattedData);
         
-        console.log('New data hash length:', newDataHash.length);
-        console.log('Previous data hash length:', previousDataHash.length);
-        console.log('Hash comparison - Equal:', newDataHash === previousDataHash);
-        console.log('Previous hash exists:', !!previousDataHash);
+        console.log('🔍 HASH ANALYSIS:');
+        console.log('📊 New data hash length:', newDataHash.length);
+        console.log('📊 Previous data hash length:', previousDataHash.length);
+        console.log('📊 Hash comparison - Equal:', newDataHash === previousDataHash);
+        console.log('📊 Previous hash exists:', !!previousDataHash);
+        console.log('📊 New hash preview:', newDataHash.substring(0, 100) + '...');
+        console.log('📊 Previous hash preview:', previousDataHash.substring(0, 100) + '...');
         
         // Debug: show what's different if lengths don't match
         if (previousDataHash && newDataHash.length !== previousDataHash.length) {

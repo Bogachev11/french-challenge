@@ -669,7 +669,7 @@ const FrenchChallengeDashboard = () => {
             React.createElement('span', null, "Write")
           ),
           React.createElement('div', { key: 'listen', className: "flex items-center gap-1" },
-            React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#5571F7', borderRadius: '50%' } }),
+            React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#5189E9', borderRadius: '50%' } }),
             React.createElement('span', null, "Listen")
           ),
           React.createElement('div', { key: 'speak', className: "flex items-center gap-1" },
@@ -677,7 +677,7 @@ const FrenchChallengeDashboard = () => {
             React.createElement('span', null, "Speak")
           ),
           React.createElement('div', { key: 'read', className: "flex items-center gap-1" },
-            React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#7F61F6', borderRadius: '50%' } }),
+            React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#9378FF', borderRadius: '50%' } }),
             React.createElement('span', null, "Read")
           )
         ] : [
@@ -756,9 +756,9 @@ const FrenchChallengeDashboard = () => {
               // Order: Grammar - Write - Listen - Speak - Read with provided palette
               React.createElement(Bar, { key: 'grammar', dataKey: "grammarTime", stackId: "time", fill: "#F72585" }),
               React.createElement(Bar, { key: 'writing', dataKey: "writingTime", stackId: "time", fill: "#4CC9F0" }),
-              React.createElement(Bar, { key: 'listening', dataKey: "listeningTime", stackId: "time", fill: "#5571F7" }),
+              React.createElement(Bar, { key: 'listening', dataKey: "listeningTime", stackId: "time", fill: "#5189E9" }),
               React.createElement(Bar, { key: 'speaking', dataKey: "speakingTime", stackId: "time", fill: "#4A2CF5" }),
-              React.createElement(Bar, { key: 'reading', dataKey: "readingTime", stackId: "time", fill: "#7F61F6" }),
+              React.createElement(Bar, { key: 'reading', dataKey: "readingTime", stackId: "time", fill: "#9378FF" }),
               React.createElement(Bar, { key: 'legacy', dataKey: "legacyTime", stackId: "time", fill: "#D5DAE3" })
             ] : [
               React.createElement(Bar, { key: 'theory', dataKey: "theoryTime", stackId: "time", fill: "#03a9f4" }),

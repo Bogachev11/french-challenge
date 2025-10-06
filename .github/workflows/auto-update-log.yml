@@ -36,16 +36,20 @@ jobs:
           if [ -f "update-log.json" ]; then
             # Если файл существует, сравниваем данные
             OLD_DATA=$(jq -r '.data // []' update-log.json)
-            echo "Old data: $OLD_DATA"
+            echo "Old data length: ${#OLD_DATA}"
+            echo "Current data length: ${#CURRENT_DATA}"
+            echo "Data comparison: $([ "$CURRENT_DATA" = "$OLD_DATA" ] && echo "EQUAL" || echo "DIFFERENT")"
             
             if [ "$CURRENT_DATA" = "$OLD_DATA" ]; then
-              echo "No changes detected - skipping update"
+              echo "✅ No changes detected - skipping update"
               exit 0
             else
-              echo "Data changed - updating file"
+              echo "🔄 Data changed - updating file"
+              echo "First 100 chars of old: ${OLD_DATA:0:100}"
+              echo "First 100 chars of new: ${CURRENT_DATA:0:100}"
             fi
           else
-            echo "No existing file - creating new one"
+            echo "📄 No existing file - creating new one"
           fi
           
           # Обновить файл с новыми данными

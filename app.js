@@ -157,7 +157,7 @@ const FrenchChallengeDashboard = () => {
   // Google Sheets API settings
   const SHEET_ID = '1h-5h_20vKLjIq9t0YlFf5BvPDMOaKURfbzZuNSyTyZ4';
   const API_KEY = 'AIzaSyBOewv068qAmujAaU5du_-VqAfqzzjkgGM';
-  const RANGE = '90_days_list!A2:J'; // Data starting from row 2 (without headers) from sheet "90_days_list"
+  const RANGE = '90_days_list!A2:O'; // Extend to column O to include new categories
   
   // Load data from Google Sheets
   React.useEffect(() => {
@@ -194,8 +194,26 @@ const FrenchChallengeDashboard = () => {
               homeworkTime: parseInt(row[5]) || 0,
               prolingvoTime: parseInt(row[6]) || 0,
               otherTime: parseInt(row[7]) || 0,
-             mood: parseFloat(row[8]) || null
+              mood: parseFloat(row[8]) || null,
+              // Новые категории (появляются с 15 дня). Колонки: K–O → индексы 10–14
+              readingTime: parseInt(String(row[10] ?? '').trim()) || 0, // K: Read
+              writingTime: parseInt(String(row[11] ?? '').trim()) || 0, // L: Write
+              speakingTime: parseInt(String(row[12] ?? '').trim()) || 0, // M: Speak
+              listeningTime: parseInt(String(row[13] ?? '').trim()) || 0, // N: Listen
+              grammarTime: parseInt(String(row[14] ?? '').trim()) || 0  // O: Grammar
             }));
+
+        // Debug: показать первые дни с новыми категориями
+        const debug15 = formattedData.find(d => d.day === 15);
+        if (debug15) {
+          console.log('DT debug day15:', {
+            reading: debug15.readingTime,
+            writing: debug15.writingTime,
+            speaking: debug15.speakingTime,
+            listening: debug15.listeningTime,
+            grammar: debug15.grammarTime
+          });
+        }
         
         setSheetData(formattedData);
         setError(null);
@@ -303,8 +321,14 @@ const FrenchChallengeDashboard = () => {
   const allCompletedLessons = filteredTestData.flatMap(day => parseLessons(day.completedLessons));
   const completedLessons = allCompletedLessons.length;
   
-  // Рассчитываем общее время (включая otherTime)
-  const totalTime = filteredTestData.reduce((sum, day) => sum + day.theoryTime + day.homeworkTime + day.prolingvoTime + day.otherTime, 0);
+  // Рассчитываем общее время с учетом новой схемы после 15 дня
+  const getDayTotal = (day) => {
+    if (day.day >= 15) {
+      return (day.readingTime + day.writingTime + day.speakingTime + day.listeningTime + day.grammarTime);
+    }
+    return (day.theoryTime + day.homeworkTime + day.prolingvoTime + day.otherTime);
+  };
+  const totalTime = filteredTestData.reduce((sum, day) => sum + getDayTotal(day), 0);
   const avgTime = Math.round(totalTime / displayCurrentDay);
   
   // Прогноз уроков
@@ -331,19 +355,37 @@ const FrenchChallengeDashboard = () => {
       });
     }
   }
-  
+
   // Данные для графика времени (все 90 дней)
   const timeData = [];
+  const useNewCategories = displayCurrentDay >= 15;
   for (let day = 1; day <= displayCurrentDay; day++) {
     const existingDay = filteredTestData.find(d => d.day === day);
-    timeData.push({
-      day: day,
-      theoryTime: existingDay ? existingDay.theoryTime : 0,
-      homeworkTime: existingDay ? existingDay.homeworkTime : 0,
-      prolingvoTime: existingDay ? existingDay.prolingvoTime : 0,
-      otherTime: existingDay ? existingDay.otherTime : 0
-    });
+    if (useNewCategories) {
+      timeData.push({
+        day: day,
+        // Для дней до 15 показываем серым суммарное старых категорий
+        legacyTime: existingDay ? (existingDay.day < 15 ? (existingDay.theoryTime + existingDay.homeworkTime + existingDay.prolingvoTime + existingDay.otherTime) : 0) : 0,
+        readingTime: existingDay ? (existingDay.day >= 15 ? existingDay.readingTime : 0) : 0,
+        writingTime: existingDay ? (existingDay.day >= 15 ? existingDay.writingTime : 0) : 0,
+        speakingTime: existingDay ? (existingDay.day >= 15 ? existingDay.speakingTime : 0) : 0,
+        listeningTime: existingDay ? (existingDay.day >= 15 ? existingDay.listeningTime : 0) : 0,
+        grammarTime: existingDay ? (existingDay.day >= 15 ? existingDay.grammarTime : 0) : 0
+      });
+    } else {
+      timeData.push({
+        day: day,
+        theoryTime: existingDay ? existingDay.theoryTime : 0,
+        homeworkTime: existingDay ? existingDay.homeworkTime : 0,
+        prolingvoTime: existingDay ? existingDay.prolingvoTime : 0,
+        otherTime: existingDay ? existingDay.otherTime : 0
+      });
+    }
   }
+  
+  // Debug: timeData for day 15
+  const td15 = timeData.find(d => d.day === 15);
+  if (td15) console.log('timeData[15]:', td15);
   
   // Данные для графика настроения с экспоненциальным сглаживанием
   const moodData = [];
@@ -391,7 +433,10 @@ const FrenchChallengeDashboard = () => {
   
   for (let i = filteredTestData.length - 1; i >= 0; i--) {
     const day = filteredTestData[i];
-    const hasActivity = (day.theoryTime + day.homeworkTime + day.prolingvoTime + day.otherTime) > 0 || 
+    const dayActivityTime = day.day >= 15
+      ? (day.readingTime + day.writingTime + day.speakingTime + day.listeningTime + day.grammarTime)
+      : (day.theoryTime + day.homeworkTime + day.prolingvoTime + day.otherTime);
+    const hasActivity = dayActivityTime > 0 || 
                        parseLessons(day.completedLessons).length > 0 || 
                        parseLessons(day.attemptedLessons).length > 0;
     
@@ -448,7 +493,7 @@ const FrenchChallengeDashboard = () => {
         React.createElement('div', { className: "text-sm text-gray-600" }, "lessons"),
         React.createElement('div', { 
           className: "absolute top-2 right-2 bg-gray-200 overflow-hidden",
-          style: { height: 'calc(100% - 16px)', width: '6px', borderRadius: '0' }
+          style: { height: 'calc(100% - 16px)', width: '6px', borderRadius: '2px' }
         },
           React.createElement('div', { 
             style: { 
@@ -492,25 +537,11 @@ const FrenchChallengeDashboard = () => {
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Lessons Progress"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1 flex items-center gap-3" },
         React.createElement('div', { className: "flex items-center gap-1" },
-          React.createElement('div', { 
-            style: { 
-              width: '8px', 
-              height: '10px', 
-              backgroundColor: '#3b82f6',
-              borderRadius: '50%'
-            } 
-          }),
+          React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#3b82f6', borderRadius: '50%' } }),
           React.createElement('span', null, "Cumulative")
         ),
         React.createElement('div', { className: "flex items-center gap-1" },
-          React.createElement('div', { 
-            style: { 
-              width: '8px', 
-              height: '10px', 
-              backgroundColor: '#9ca3af',
-              borderRadius: '50%'
-            } 
-          }),
+          React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#9ca3af', borderRadius: '50%' } }),
           React.createElement('span', null, "Daily")
         )
       ),
@@ -628,50 +659,45 @@ const FrenchChallengeDashboard = () => {
     React.createElement('div', { className: "px-4 mb-0" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Daily Time"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1 flex items-center gap-3" },
-        React.createElement('div', { className: "flex items-center gap-1" },
-          React.createElement('div', { 
-            style: { 
-              width: '8px', 
-              height: '10px', 
-              backgroundColor: '#03a9f4',
-              borderRadius: '50%'
-            } 
-          }),
-          React.createElement('span', null, "Theory")
-        ),
-        React.createElement('div', { className: "flex items-center gap-1" },
-          React.createElement('div', { 
-            style: { 
-              width: '8px', 
-              height: '10px', 
-              backgroundColor: '#673ab7',
-              borderRadius: '50%'
-            } 
-          }),
-          React.createElement('span', null, "Homework")
-        ),
-        React.createElement('div', { className: "flex items-center gap-1" },
-          React.createElement('div', { 
-            style: { 
-              width: '8px', 
-              height: '10px', 
-              backgroundColor: '#e91e63',
-              borderRadius: '50%'
-            } 
-          }),
-          React.createElement('span', null, "Basic grammar")
-        ),
-        React.createElement('div', { className: "flex items-center gap-1" },
-          React.createElement('div', { 
-            style: { 
-              width: '8px', 
-              height: '10px', 
-              backgroundColor: '#9ca3af',
-              borderRadius: '50%'
-            } 
-          }),
-          React.createElement('span', null, "Other")
-        )
+        ...(displayCurrentDay >= 15 ? [
+          React.createElement('div', { key: 'grammar', className: "flex items-center gap-1" },
+            React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#F72585', borderRadius: '50%' } }),
+            React.createElement('span', null, "Grammar")
+          ),
+          React.createElement('div', { key: 'write', className: "flex items-center gap-1" },
+            React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#4CC9F0', borderRadius: '50%' } }),
+            React.createElement('span', null, "Write")
+          ),
+          React.createElement('div', { key: 'listen', className: "flex items-center gap-1" },
+            React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#5571F7', borderRadius: '50%' } }),
+            React.createElement('span', null, "Listen")
+          ),
+          React.createElement('div', { key: 'speak', className: "flex items-center gap-1" },
+            React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#4A2CF5', borderRadius: '50%' } }),
+            React.createElement('span', null, "Speak")
+          ),
+          React.createElement('div', { key: 'read', className: "flex items-center gap-1" },
+            React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#7F61F6', borderRadius: '50%' } }),
+            React.createElement('span', null, "Read")
+          )
+        ] : [
+          React.createElement('div', { key: 'theory', className: "flex items-center gap-1" },
+            React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#03a9f4', borderRadius: '50%' } }),
+            React.createElement('span', null, "Theory")
+          ),
+          React.createElement('div', { key: 'home', className: "flex items-center gap-1" },
+            React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#673ab7', borderRadius: '50%' } }),
+            React.createElement('span', null, "Homework")
+          ),
+          React.createElement('div', { key: 'pro', className: "flex items-center gap-1" },
+            React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#e91e63', borderRadius: '50%' } }),
+            React.createElement('span', null, "Basic grammar")
+          ),
+          React.createElement('div', { key: 'other', className: "flex items-center gap-1" },
+            React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#9ca3af', borderRadius: '50%' } }),
+            React.createElement('span', null, "Other")
+          )
+        ])
       ),
       React.createElement('div', { className: "h-36", style: { marginTop: '10px', height: 'calc(9rem * 0.85)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
@@ -706,9 +732,9 @@ const FrenchChallengeDashboard = () => {
               tick: (props) => React.createElement(CustomXAxisTick, { ...props, currentDay: displayCurrentDay })
             }),
             React.createElement(YAxis, { 
-              domain: [0, Math.ceil(Math.max(...timeData.map(d => d.totalTime)) / 30) * 30],
+              domain: [0, Math.ceil(Math.max(...timeData.map(d => (d.legacyTime || 0) + (d.readingTime || d.theoryTime || 0) + (d.writingTime || d.homeworkTime || 0) + (d.speakingTime || d.prolingvoTime || 0) + (d.listeningTime || 0) + (d.grammarTime || d.otherTime || 0))) / 30) * 30],
               ticks: (() => {
-                const max = Math.ceil(Math.max(...timeData.map(d => d.totalTime)) / 30) * 30;
+                const max = Math.ceil(Math.max(...timeData.map(d => (d.legacyTime || 0) + (d.readingTime || d.theoryTime || 0) + (d.writingTime || d.homeworkTime || 0) + (d.speakingTime || d.prolingvoTime || 0) + (d.listeningTime || 0) + (d.grammarTime || d.otherTime || 0))) / 30) * 30;
                 const ticks = [];
                 for (let i = 0; i <= max; i += 30) {
                   ticks.push(i);
@@ -726,10 +752,20 @@ const FrenchChallengeDashboard = () => {
               axisLine: false,
               fontSize: 12
             }),
-            React.createElement(Bar, { dataKey: "theoryTime", stackId: "time", fill: "#03a9f4" }),
-            React.createElement(Bar, { dataKey: "homeworkTime", stackId: "time", fill: "#673ab7" }),
-            React.createElement(Bar, { dataKey: "prolingvoTime", stackId: "time", fill: "#e91e63" }),
-            React.createElement(Bar, { dataKey: "otherTime", stackId: "time", fill: "#B0B5BF" })
+            ...(displayCurrentDay >= 15 ? [
+              // Order: Grammar - Write - Listen - Speak - Read with provided palette
+              React.createElement(Bar, { key: 'grammar', dataKey: "grammarTime", stackId: "time", fill: "#F72585" }),
+              React.createElement(Bar, { key: 'writing', dataKey: "writingTime", stackId: "time", fill: "#4CC9F0" }),
+              React.createElement(Bar, { key: 'listening', dataKey: "listeningTime", stackId: "time", fill: "#5571F7" }),
+              React.createElement(Bar, { key: 'speaking', dataKey: "speakingTime", stackId: "time", fill: "#4A2CF5" }),
+              React.createElement(Bar, { key: 'reading', dataKey: "readingTime", stackId: "time", fill: "#7F61F6" }),
+              React.createElement(Bar, { key: 'legacy', dataKey: "legacyTime", stackId: "time", fill: "#D5DAE3" })
+            ] : [
+              React.createElement(Bar, { key: 'theory', dataKey: "theoryTime", stackId: "time", fill: "#03a9f4" }),
+              React.createElement(Bar, { key: 'homework', dataKey: "homeworkTime", stackId: "time", fill: "#673ab7" }),
+              React.createElement(Bar, { key: 'prolingvo', dataKey: "prolingvoTime", stackId: "time", fill: "#e91e63" }),
+              React.createElement(Bar, { key: 'other', dataKey: "otherTime", stackId: "time", fill: "#B0B5BF" })
+            ])
           )
         )
       )

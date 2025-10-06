@@ -23,7 +23,7 @@ jobs:
           # Получить данные из Google Sheets
           SHEET_ID="1h-5h_20vKLjIq9t0YlFf5BvPDMOaKURfbzZuNSyTyZ4"
           API_KEY="AIzaSyBOewv068qAmujAaU5du_-VqAfqzzjkgGM"
-          RANGE="90_days_list!A2:J1000"
+          RANGE="90_days_list!A2:O1000"
           
           RESPONSE=$(curl -s "https://sheets.googleapis.com/v4/spreadsheets/$SHEET_ID/values/$RANGE?key=$API_KEY")
           echo "Google Sheets API response: $RESPONSE"

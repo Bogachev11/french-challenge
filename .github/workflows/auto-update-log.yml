@@ -28,16 +28,15 @@ jobs:
           RESPONSE=$(curl -s "https://sheets.googleapis.com/v4/spreadsheets/$SHEET_ID/values/$RANGE?key=$API_KEY")
           echo "Google Sheets API response: $RESPONSE"
           
-          # Получить текущие данные как JSON
+          # Получить текущие данные как JSON (компактный формат)
           CURRENT_DATA=$(echo "$RESPONSE" | jq -c '.values // []')
-          echo "Current data: $CURRENT_DATA"
+          echo "Current data length: ${#CURRENT_DATA}"
           
           # Проверить, есть ли изменения
           if [ -f "update-log.json" ]; then
-            # Если файл существует, сравниваем данные
-            OLD_DATA=$(jq -r '.data // []' update-log.json)
+            # Получить старые данные в том же компактном формате
+            OLD_DATA=$(jq -c '.data // []' update-log.json)
             echo "Old data length: ${#OLD_DATA}"
-            echo "Current data length: ${#CURRENT_DATA}"
             echo "Data comparison: $([ "$CURRENT_DATA" = "$OLD_DATA" ] && echo "EQUAL" || echo "DIFFERENT")"
             
             if [ "$CURRENT_DATA" = "$OLD_DATA" ]; then

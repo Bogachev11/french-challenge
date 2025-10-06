@@ -194,7 +194,7 @@ const FrenchChallengeDashboard = () => {
               homeworkTime: parseInt(row[5]) || 0,
               prolingvoTime: parseInt(row[6]) || 0,
               otherTime: parseInt(row[7]) || 0,
-              mood: parseInt(row[8]) || null
+             mood: parseFloat(row[8]) || null
             }));
         
         setSheetData(formattedData);

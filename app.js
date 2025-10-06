@@ -101,7 +101,7 @@ const getUpdateTimeText = (updateTime) => {
 
   if (diffHours < 1) {
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    return `${diffMinutes} min ago`;
+    return `${diffMinutes}m ago`;
   } else if (diffHours < 24 && diffDays === 0) {
     return `${diffHours}h ago`;
   } else if (diffDays === 1) {
@@ -447,13 +447,13 @@ const FrenchChallengeDashboard = () => {
         React.createElement('div', { className: "text-xl font-bold text-gray-800" }, `${completedLessons}/40`),
         React.createElement('div', { className: "text-sm text-gray-600" }, "lessons"),
         React.createElement('div', { 
-          className: "absolute top-2 right-2 w-1 bg-gray-200 rounded-full overflow-hidden",
-          style: { height: 'calc(100% - 16px)' }
+          className: "absolute top-2 right-2 bg-gray-200 overflow-hidden",
+          style: { height: 'calc(100% - 16px)', width: '6px', borderRadius: '0' }
         },
           React.createElement('div', { 
             style: { 
-              height: `${(completedLessons / 40) * 100}%`,
-              width: '100%',
+            height: `${(completedLessons / 40) * 100}%`,
+            width: '100%',
               backgroundColor: '#3b82f6',
               transition: 'height 0.3s ease',
               position: 'absolute',
@@ -464,14 +464,17 @@ const FrenchChallengeDashboard = () => {
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
         React.createElement('div', { className: "text-xl font-bold text-gray-800" }, 
-          `${avgTime}`, React.createElement('span', { className: "thin-nbsp" }), 'm'
+          (() => {
+            if (avgTime < 60) return `${avgTime}m`;
+            const h = Math.floor(avgTime / 60);
+            const m = avgTime % 60;
+            return m === 0 ? `${h}h` : `${h}h\u202F${m}m`;
+          })()
         ),
         React.createElement('div', { className: "text-sm text-gray-600" }, "avg/day")
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
-        React.createElement('div', { className: "text-xl font-bold text-gray-800" }, 
-          `${Math.round(totalTime/60)}`, React.createElement('span', { className: "thin-nbsp" }), 'h'
-        ),
+        React.createElement('div', { className: "text-xl font-bold text-gray-800" }, `${Math.round(totalTime/60)}h`),
         React.createElement('div', { className: "text-sm text-gray-600" }, "total time")
       ),
       React.createElement('div', { className: "bg-gray-50 p-2 rounded-lg" },
@@ -492,7 +495,7 @@ const FrenchChallengeDashboard = () => {
           React.createElement('div', { 
             style: { 
               width: '8px', 
-              height: '8px', 
+              height: '10px', 
               backgroundColor: '#3b82f6',
               borderRadius: '50%'
             } 
@@ -503,7 +506,7 @@ const FrenchChallengeDashboard = () => {
           React.createElement('div', { 
             style: { 
               width: '8px', 
-              height: '8px', 
+              height: '10px', 
               backgroundColor: '#9ca3af',
               borderRadius: '50%'
             } 
@@ -629,7 +632,7 @@ const FrenchChallengeDashboard = () => {
           React.createElement('div', { 
             style: { 
               width: '8px', 
-              height: '8px', 
+              height: '10px', 
               backgroundColor: '#03a9f4',
               borderRadius: '50%'
             } 
@@ -640,7 +643,7 @@ const FrenchChallengeDashboard = () => {
           React.createElement('div', { 
             style: { 
               width: '8px', 
-              height: '8px', 
+              height: '10px', 
               backgroundColor: '#673ab7',
               borderRadius: '50%'
             } 
@@ -651,7 +654,7 @@ const FrenchChallengeDashboard = () => {
           React.createElement('div', { 
             style: { 
               width: '8px', 
-              height: '8px', 
+              height: '10px', 
               backgroundColor: '#e91e63',
               borderRadius: '50%'
             } 
@@ -662,7 +665,7 @@ const FrenchChallengeDashboard = () => {
           React.createElement('div', { 
             style: { 
               width: '8px', 
-              height: '8px', 
+              height: '10px', 
               backgroundColor: '#9ca3af',
               borderRadius: '50%'
             } 
@@ -713,12 +716,12 @@ const FrenchChallengeDashboard = () => {
                 return ticks;
               })(),
               tickFormatter: (value) => {
-                if (value === 0) return '0\u202Fm';
-                if (value < 60) return `${value}\u202Fm`;
+                if (value === 0) return '0m';
+                if (value < 60) return `${value}m`;
                 const hours = Math.floor(value / 60);
                 const minutes = value % 60;
-                if (minutes === 0) return `${hours}\u202Fh`;
-                return `${hours}\u202Fh\u202F${minutes}\u202Fm`;
+                if (minutes === 0) return `${hours}h`;
+                return `${hours}h\u202F${minutes}m`;
               },
               axisLine: false,
               fontSize: 12
@@ -726,7 +729,7 @@ const FrenchChallengeDashboard = () => {
             React.createElement(Bar, { dataKey: "theoryTime", stackId: "time", fill: "#03a9f4" }),
             React.createElement(Bar, { dataKey: "homeworkTime", stackId: "time", fill: "#673ab7" }),
             React.createElement(Bar, { dataKey: "prolingvoTime", stackId: "time", fill: "#e91e63" }),
-            React.createElement(Bar, { dataKey: "otherTime", stackId: "time", fill: "#9ca3af" })
+            React.createElement(Bar, { dataKey: "otherTime", stackId: "time", fill: "#B0B5BF" })
           )
         )
       )

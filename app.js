@@ -6,7 +6,7 @@ if (typeof Recharts === 'undefined') {
   console.error('Recharts not loaded');
 }
 
-const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, ComposedChart, Dot, ReferenceLine } = Recharts;
+const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, ComposedChart, Dot, ReferenceLine, Label } = Recharts;
 
 // Функция для получения цвета по значению настроения (градиент от красного к синему)
 const getMoodColor = (value) => {
@@ -56,6 +56,25 @@ const LessonDots = (props) => {
   }
   
   return React.createElement('g', null, ...dots);
+};
+
+// Кастомный компонент для надписи "forecast" под последней точкой
+const ForecastDot = (props) => {
+  const { cx, cy, payload, displayCurrentDay, completedLessons } = props;
+  
+  // Показываем надпись только для последней точки cumulative progress
+  if (payload && payload.day === displayCurrentDay) {
+    return React.createElement('text', {
+      x: cx - 2,
+      y: cy + 15, // под точкой на 15px ниже
+      textAnchor: 'start',
+      fill: '#93c5fd',
+      fontSize: '12px',
+      style: { pointerEvents: 'none' }
+    }, 'forecast');
+  }
+  
+  return null;
 };
 
 // Кастомный компонент для выделения текущего дня на оси X
@@ -375,7 +394,7 @@ const FrenchChallengeDashboard = () => {
       });
     }
   }
-
+  
   // Данные для графика времени (все 90 дней)
   const timeData = [];
   const useNewCategories = displayCurrentDay >= 15;
@@ -393,13 +412,13 @@ const FrenchChallengeDashboard = () => {
         grammarTime: existingDay ? (existingDay.day >= 15 ? existingDay.grammarTime : 0) : 0
       });
     } else {
-      timeData.push({
-        day: day,
-        theoryTime: existingDay ? existingDay.theoryTime : 0,
-        homeworkTime: existingDay ? existingDay.homeworkTime : 0,
-        prolingvoTime: existingDay ? existingDay.prolingvoTime : 0,
-        otherTime: existingDay ? existingDay.otherTime : 0
-      });
+    timeData.push({
+      day: day,
+      theoryTime: existingDay ? existingDay.theoryTime : 0,
+      homeworkTime: existingDay ? existingDay.homeworkTime : 0,
+      prolingvoTime: existingDay ? existingDay.prolingvoTime : 0,
+      otherTime: existingDay ? existingDay.otherTime : 0
+    });
     }
   }
   
@@ -517,8 +536,8 @@ const FrenchChallengeDashboard = () => {
         },
           React.createElement('div', { 
             style: { 
-            height: `${(completedLessons / 40) * 100}%`,
-            width: '100%',
+              height: `${(completedLessons / 40) * 100}%`,
+              width: '100%',
               backgroundColor: '#3b82f6',
               transition: 'height 0.3s ease',
               position: 'absolute',
@@ -606,8 +625,9 @@ const FrenchChallengeDashboard = () => {
               dataKey: "lessons", 
               stroke: "#3b82f6", 
               strokeWidth: 3,
-              dot: false,
+              dot: (props) => React.createElement(ForecastDot, { ...props, displayCurrentDay: displayCurrentDay, completedLessons: completedLessons }),
               connectNulls: false,
+              isAnimationActive: false,
               data: allData.filter(d => d.day <= displayCurrentDay)
             }),
             forecastData.length > 0 && React.createElement(Line, { 
@@ -618,6 +638,7 @@ const FrenchChallengeDashboard = () => {
               strokeOpacity: 0.5,
               dot: false,
               connectNulls: false,
+              isAnimationActive: false,
               data: forecastData
             }),
             forecastData.length > 0 && React.createElement(ReferenceLine, {
@@ -628,28 +649,7 @@ const FrenchChallengeDashboard = () => {
               strokeDasharray: "none"
             })
           )
-        ),
-        // Подпись "forecast" на графике
-        forecastData.length > 0 && (() => {
-          const midPoint = Math.floor(forecastData.length / 2);
-          const midDay = forecastData[midPoint]?.day || displayCurrentDay;
-          const midValue = forecastData[midPoint]?.forecast || completedLessons;
-          
-          // Рассчитываем позицию в процентах от ширины графика
-          const dayPosition = ((midDay - 1) / 89) * 100; // 89 = 90 дней - 1
-          const valuePosition = ((midValue - 0) / 40) * 100; // 40 = максимальное значение
-          
-          return React.createElement('div', {
-            className: "absolute text-xs pointer-events-none",
-            style: {
-              left: `${5 + (dayPosition * 0.8)}%`, // 5% отступ слева + позиция дня
-              top: `${9 + (100 - valuePosition * 0.85) - 8}%`, // ближе к графику (-8px)
-              transform: 'translate(-50%, 0)',
-              whiteSpace: 'nowrap',
-              color: '#93c5fd' // бледно-голубой цвет
-            }
-          }, "forecast");
-        })()
+        )
       ),
       // Второй график - прямая линия с кружочками для пройденных уроков
       React.createElement('div', { className: "h-20 relative", style: { marginTop: '-15px', height: '3rem' } },
@@ -786,8 +786,8 @@ const FrenchChallengeDashboard = () => {
             onTouchStart: () => setHoveredCategory(hoveredCategory === 'theoryTime' ? null : 'theoryTime')
           },
             React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#03a9f4', borderRadius: '50%' } }),
-            React.createElement('span', null, "Theory")
-          ),
+          React.createElement('span', null, "Theory")
+        ),
           React.createElement('div', { 
             key: 'home', 
             className: "flex items-center gap-1 cursor-pointer transition-opacity",
@@ -797,8 +797,8 @@ const FrenchChallengeDashboard = () => {
             onTouchStart: () => setHoveredCategory(hoveredCategory === 'homeworkTime' ? null : 'homeworkTime')
           },
             React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#673ab7', borderRadius: '50%' } }),
-            React.createElement('span', null, "Homework")
-          ),
+          React.createElement('span', null, "Homework")
+        ),
           React.createElement('div', { 
             key: 'pro', 
             className: "flex items-center gap-1 cursor-pointer transition-opacity",
@@ -808,8 +808,8 @@ const FrenchChallengeDashboard = () => {
             onTouchStart: () => setHoveredCategory(hoveredCategory === 'prolingvoTime' ? null : 'prolingvoTime')
           },
             React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#e91e63', borderRadius: '50%' } }),
-            React.createElement('span', null, "Basic grammar")
-          ),
+          React.createElement('span', null, "Basic grammar")
+        ),
           React.createElement('div', { 
             key: 'other', 
             className: "flex items-center gap-1 cursor-pointer transition-opacity",
@@ -819,8 +819,8 @@ const FrenchChallengeDashboard = () => {
             onTouchStart: () => setHoveredCategory(hoveredCategory === 'otherTime' ? null : 'otherTime')
           },
             React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#9ca3af', borderRadius: '50%' } }),
-            React.createElement('span', null, "Other")
-          )
+          React.createElement('span', null, "Other")
+        )
         ])
       ),
       React.createElement('div', { className: "h-36", style: { marginTop: '10px', height: 'calc(9rem * 0.85)' } },

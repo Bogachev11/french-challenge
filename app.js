@@ -6,7 +6,7 @@ if (typeof Recharts === 'undefined') {
   console.error('Recharts not loaded');
 }
 
-const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, ComposedChart, Dot } = Recharts;
+const { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, ComposedChart, Dot, ReferenceLine } = Recharts;
 
 // Функция для получения цвета по значению настроения (градиент от красного к синему)
 const getMoodColor = (value) => {
@@ -60,18 +60,19 @@ const LessonDots = (props) => {
 
 // Кастомный компонент для выделения текущего дня на оси X
 const CustomXAxisTick = (props) => {
-  const { x, y, payload, currentDay, hideLabels } = props;
+  const { x, y, payload, currentDay, hideLabels, forecastEndDay } = props;
   const isCurrentDay = payload.value === currentDay;
+  const isForecastEndDay = payload.value === forecastEndDay;
   
-  // Если нужно скрыть labels, возвращаем пустой элемент
-  if (hideLabels) {
+  // Показываем лейбл только для текущего дня и дня прогноза
+  if (hideLabels && !isCurrentDay && !isForecastEndDay) {
     return React.createElement('g', { transform: `translate(${x},${y})` });
   }
   
-  // Скрываем подписи для 1, 10, 30, 60, 90 если текущий день рядом
+  // Скрываем подписи для 1, 10, 30, 60, 90 если текущий день рядом (но не для дня прогноза)
   const specialDays = [1, 10, 30, 60, 90];
   const shouldHideSpecialDay = specialDays.includes(payload.value) && 
-    Math.abs(payload.value - currentDay) <= 2;
+    Math.abs(payload.value - currentDay) <= 2 && !isForecastEndDay;
   
   if (shouldHideSpecialDay) {
     return React.createElement('g', { transform: `translate(${x},${y})` });
@@ -83,7 +84,7 @@ const CustomXAxisTick = (props) => {
       y: 0,
       dy: 10,
       textAnchor: "middle",
-      fill: isCurrentDay ? '#000000' : '#666666',
+      fill: isCurrentDay ? '#000000' : (isForecastEndDay ? '#93c5fd' : '#666666'),
       fontWeight: isCurrentDay ? 'bold' : 'normal',
       fontSize: 12
     }, payload.value)
@@ -357,6 +358,24 @@ const FrenchChallengeDashboard = () => {
     }
   }
 
+  // Расчет прогнозной линии до 40 уроков
+  const forecastData = [];
+  if (currentLessonsPerDay > 0) {
+    // Рассчитываем прогноз от текущего дня до достижения 40 уроков
+    const remainingLessons = Math.max(0, 40 - completedLessons);
+    const daysToComplete = Math.ceil(remainingLessons / currentLessonsPerDay);
+    const forecastEndDay = Math.min(90, displayCurrentDay + daysToComplete);
+    
+    // Создаем прогнозные данные
+    for (let day = displayCurrentDay; day <= forecastEndDay; day++) {
+      const forecastLessons = Math.min(40, completedLessons + (day - displayCurrentDay) * currentLessonsPerDay);
+      forecastData.push({
+        day: day,
+        forecast: forecastLessons
+      });
+    }
+  }
+
   // Данные для графика времени (все 90 дней)
   const timeData = [];
   const useNewCategories = displayCurrentDay >= 15;
@@ -562,16 +581,19 @@ const FrenchChallengeDashboard = () => {
                 // Добавляем текущий день если его нет в базовых тиках
                 if (!baseTicks.includes(displayCurrentDay)) {
                   ticks.push(displayCurrentDay);
-                  ticks.sort((a, b) => a - b);
                 }
                 
+                // Добавляем день прогноза если он есть и его нет в тиках
+                const forecastEndDay = forecastData.length > 0 ? forecastData[forecastData.length - 1]?.day : null;
+                if (forecastEndDay && !ticks.includes(forecastEndDay)) {
+                  ticks.push(forecastEndDay);
+                }
+                
+                ticks.sort((a, b) => a - b);
                 return ticks;
               })(),
-              tickFormatter: (value) => {
-                return ''; // Скрываем все labels
-              },
               tickLine: { stroke: '#000000', strokeWidth: 1 },
-              tick: (props) => React.createElement(CustomXAxisTick, { ...props, currentDay: displayCurrentDay, hideLabels: true })
+              tick: (props) => React.createElement(CustomXAxisTick, { ...props, currentDay: displayCurrentDay, hideLabels: true, forecastEndDay: forecastData.length > 0 ? forecastData[forecastData.length - 1]?.day : null })
             }),
             React.createElement(YAxis, { 
               domain: [0, 40],
@@ -587,9 +609,47 @@ const FrenchChallengeDashboard = () => {
               dot: false,
               connectNulls: false,
               data: allData.filter(d => d.day <= displayCurrentDay)
+            }),
+            forecastData.length > 0 && React.createElement(Line, { 
+              type: "step", 
+              dataKey: "forecast", 
+              stroke: "#3b82f6", 
+              strokeWidth: 3,
+              strokeOpacity: 0.5,
+              dot: false,
+              connectNulls: false,
+              data: forecastData
+            }),
+            forecastData.length > 0 && React.createElement(ReferenceLine, {
+              x: forecastData[forecastData.length - 1]?.day,
+              stroke: "#93c5fd",
+              strokeWidth: 1,
+              strokeOpacity: 0.5,
+              strokeDasharray: "none"
             })
           )
-        )
+        ),
+        // Подпись "forecast" на графике
+        forecastData.length > 0 && (() => {
+          const midPoint = Math.floor(forecastData.length / 2);
+          const midDay = forecastData[midPoint]?.day || displayCurrentDay;
+          const midValue = forecastData[midPoint]?.forecast || completedLessons;
+          
+          // Рассчитываем позицию в процентах от ширины графика
+          const dayPosition = ((midDay - 1) / 89) * 100; // 89 = 90 дней - 1
+          const valuePosition = ((midValue - 0) / 40) * 100; // 40 = максимальное значение
+          
+          return React.createElement('div', {
+            className: "absolute text-xs pointer-events-none",
+            style: {
+              left: `${5 + (dayPosition * 0.8)}%`, // 5% отступ слева + позиция дня
+              top: `${9 + (100 - valuePosition * 0.85) - 8}%`, // ближе к графику (-8px)
+              transform: 'translate(-50%, 0)',
+              whiteSpace: 'nowrap',
+              color: '#93c5fd' // бледно-голубой цвет
+            }
+          }, "forecast");
+        })()
       ),
       // Второй график - прямая линия с кружочками для пройденных уроков
       React.createElement('div', { className: "h-20 relative", style: { marginTop: '-15px', height: '3rem' } },

@@ -125,6 +125,7 @@ const FrenchChallengeDashboard = () => {
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
   const [lastUpdateTime, setLastUpdateTime] = React.useState(new Date(Date.now() - 24 * 60 * 60 * 1000)); // Default to yesterday
+  const [hoveredCategory, setHoveredCategory] = React.useState(null); // For Daily Time hover highlighting
   // previousDataHash removed - no longer needed
   
   // Load last update time from update-log.json
@@ -660,40 +661,103 @@ const FrenchChallengeDashboard = () => {
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Daily Time"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1 flex items-center gap-3" },
         ...(displayCurrentDay >= 15 ? [
-          React.createElement('div', { key: 'grammar', className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            key: 'grammar', 
+            className: "flex items-center gap-1 cursor-pointer transition-opacity",
+            style: { opacity: hoveredCategory === null || hoveredCategory === 'grammarTime' ? 1 : 0.3 },
+            onMouseEnter: () => setHoveredCategory('grammarTime'),
+            onMouseLeave: () => setHoveredCategory(null),
+            onTouchStart: () => setHoveredCategory(hoveredCategory === 'grammarTime' ? null : 'grammarTime')
+          },
             React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#F72585', borderRadius: '50%' } }),
             React.createElement('span', null, "Grammar")
           ),
-          React.createElement('div', { key: 'write', className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            key: 'write', 
+            className: "flex items-center gap-1 cursor-pointer transition-opacity",
+            style: { opacity: hoveredCategory === null || hoveredCategory === 'writingTime' ? 1 : 0.3 },
+            onMouseEnter: () => setHoveredCategory('writingTime'),
+            onMouseLeave: () => setHoveredCategory(null),
+            onTouchStart: () => setHoveredCategory(hoveredCategory === 'writingTime' ? null : 'writingTime')
+          },
             React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#4CC9F0', borderRadius: '50%' } }),
             React.createElement('span', null, "Write")
           ),
-          React.createElement('div', { key: 'listen', className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            key: 'listen', 
+            className: "flex items-center gap-1 cursor-pointer transition-opacity",
+            style: { opacity: hoveredCategory === null || hoveredCategory === 'listeningTime' ? 1 : 0.3 },
+            onMouseEnter: () => setHoveredCategory('listeningTime'),
+            onMouseLeave: () => setHoveredCategory(null),
+            onTouchStart: () => setHoveredCategory(hoveredCategory === 'listeningTime' ? null : 'listeningTime')
+          },
             React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#5189E9', borderRadius: '50%' } }),
             React.createElement('span', null, "Listen")
           ),
-          React.createElement('div', { key: 'speak', className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            key: 'speak', 
+            className: "flex items-center gap-1 cursor-pointer transition-opacity",
+            style: { opacity: hoveredCategory === null || hoveredCategory === 'speakingTime' ? 1 : 0.3 },
+            onMouseEnter: () => setHoveredCategory('speakingTime'),
+            onMouseLeave: () => setHoveredCategory(null),
+            onTouchStart: () => setHoveredCategory(hoveredCategory === 'speakingTime' ? null : 'speakingTime')
+          },
             React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#4A2CF5', borderRadius: '50%' } }),
             React.createElement('span', null, "Speak")
           ),
-          React.createElement('div', { key: 'read', className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            key: 'read', 
+            className: "flex items-center gap-1 cursor-pointer transition-opacity",
+            style: { opacity: hoveredCategory === null || hoveredCategory === 'readingTime' ? 1 : 0.3 },
+            onMouseEnter: () => setHoveredCategory('readingTime'),
+            onMouseLeave: () => setHoveredCategory(null),
+            onTouchStart: () => setHoveredCategory(hoveredCategory === 'readingTime' ? null : 'readingTime')
+          },
             React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#9378FF', borderRadius: '50%' } }),
             React.createElement('span', null, "Read")
           )
         ] : [
-          React.createElement('div', { key: 'theory', className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            key: 'theory', 
+            className: "flex items-center gap-1 cursor-pointer transition-opacity",
+            style: { opacity: hoveredCategory === null || hoveredCategory === 'theoryTime' ? 1 : 0.3 },
+            onMouseEnter: () => setHoveredCategory('theoryTime'),
+            onMouseLeave: () => setHoveredCategory(null),
+            onTouchStart: () => setHoveredCategory(hoveredCategory === 'theoryTime' ? null : 'theoryTime')
+          },
             React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#03a9f4', borderRadius: '50%' } }),
             React.createElement('span', null, "Theory")
           ),
-          React.createElement('div', { key: 'home', className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            key: 'home', 
+            className: "flex items-center gap-1 cursor-pointer transition-opacity",
+            style: { opacity: hoveredCategory === null || hoveredCategory === 'homeworkTime' ? 1 : 0.3 },
+            onMouseEnter: () => setHoveredCategory('homeworkTime'),
+            onMouseLeave: () => setHoveredCategory(null),
+            onTouchStart: () => setHoveredCategory(hoveredCategory === 'homeworkTime' ? null : 'homeworkTime')
+          },
             React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#673ab7', borderRadius: '50%' } }),
             React.createElement('span', null, "Homework")
           ),
-          React.createElement('div', { key: 'pro', className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            key: 'pro', 
+            className: "flex items-center gap-1 cursor-pointer transition-opacity",
+            style: { opacity: hoveredCategory === null || hoveredCategory === 'prolingvoTime' ? 1 : 0.3 },
+            onMouseEnter: () => setHoveredCategory('prolingvoTime'),
+            onMouseLeave: () => setHoveredCategory(null),
+            onTouchStart: () => setHoveredCategory(hoveredCategory === 'prolingvoTime' ? null : 'prolingvoTime')
+          },
             React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#e91e63', borderRadius: '50%' } }),
             React.createElement('span', null, "Basic grammar")
           ),
-          React.createElement('div', { key: 'other', className: "flex items-center gap-1" },
+          React.createElement('div', { 
+            key: 'other', 
+            className: "flex items-center gap-1 cursor-pointer transition-opacity",
+            style: { opacity: hoveredCategory === null || hoveredCategory === 'otherTime' ? 1 : 0.3 },
+            onMouseEnter: () => setHoveredCategory('otherTime'),
+            onMouseLeave: () => setHoveredCategory(null),
+            onTouchStart: () => setHoveredCategory(hoveredCategory === 'otherTime' ? null : 'otherTime')
+          },
             React.createElement('div', { style: { width: '10px', height: '10px', backgroundColor: '#9ca3af', borderRadius: '50%' } }),
             React.createElement('span', null, "Other")
           )
@@ -754,17 +818,77 @@ const FrenchChallengeDashboard = () => {
             }),
             ...(displayCurrentDay >= 15 ? [
               // Order: Grammar - Write - Listen - Speak - Read with provided palette
-              React.createElement(Bar, { key: 'grammar', dataKey: "grammarTime", stackId: "time", fill: "#F72585" }),
-              React.createElement(Bar, { key: 'writing', dataKey: "writingTime", stackId: "time", fill: "#4CC9F0" }),
-              React.createElement(Bar, { key: 'listening', dataKey: "listeningTime", stackId: "time", fill: "#5189E9" }),
-              React.createElement(Bar, { key: 'speaking', dataKey: "speakingTime", stackId: "time", fill: "#4A2CF5" }),
-              React.createElement(Bar, { key: 'reading', dataKey: "readingTime", stackId: "time", fill: "#9378FF" }),
-              React.createElement(Bar, { key: 'legacy', dataKey: "legacyTime", stackId: "time", fill: "#D5DAE3" })
+              React.createElement(Bar, { 
+                key: 'grammar', 
+                dataKey: "grammarTime", 
+                stackId: "time", 
+                fill: "#F72585",
+                fillOpacity: hoveredCategory === null || hoveredCategory === 'grammarTime' ? 1 : 0.3
+              }),
+              React.createElement(Bar, { 
+                key: 'writing', 
+                dataKey: "writingTime", 
+                stackId: "time", 
+                fill: "#4CC9F0",
+                fillOpacity: hoveredCategory === null || hoveredCategory === 'writingTime' ? 1 : 0.3
+              }),
+              React.createElement(Bar, { 
+                key: 'listening', 
+                dataKey: "listeningTime", 
+                stackId: "time", 
+                fill: "#5189E9",
+                fillOpacity: hoveredCategory === null || hoveredCategory === 'listeningTime' ? 1 : 0.3
+              }),
+              React.createElement(Bar, { 
+                key: 'speaking', 
+                dataKey: "speakingTime", 
+                stackId: "time", 
+                fill: "#4A2CF5",
+                fillOpacity: hoveredCategory === null || hoveredCategory === 'speakingTime' ? 1 : 0.3
+              }),
+              React.createElement(Bar, { 
+                key: 'reading', 
+                dataKey: "readingTime", 
+                stackId: "time", 
+                fill: "#9378FF",
+                fillOpacity: hoveredCategory === null || hoveredCategory === 'readingTime' ? 1 : 0.3
+              }),
+              React.createElement(Bar, { 
+                key: 'legacy', 
+                dataKey: "legacyTime", 
+                stackId: "time", 
+                fill: "#D5DAE3",
+                fillOpacity: hoveredCategory === null ? 1 : 0.3
+              })
             ] : [
-              React.createElement(Bar, { key: 'theory', dataKey: "theoryTime", stackId: "time", fill: "#03a9f4" }),
-              React.createElement(Bar, { key: 'homework', dataKey: "homeworkTime", stackId: "time", fill: "#673ab7" }),
-              React.createElement(Bar, { key: 'prolingvo', dataKey: "prolingvoTime", stackId: "time", fill: "#e91e63" }),
-              React.createElement(Bar, { key: 'other', dataKey: "otherTime", stackId: "time", fill: "#B0B5BF" })
+              React.createElement(Bar, { 
+                key: 'theory', 
+                dataKey: "theoryTime", 
+                stackId: "time", 
+                fill: "#03a9f4",
+                fillOpacity: hoveredCategory === null || hoveredCategory === 'theoryTime' ? 1 : 0.3
+              }),
+              React.createElement(Bar, { 
+                key: 'homework', 
+                dataKey: "homeworkTime", 
+                stackId: "time", 
+                fill: "#673ab7",
+                fillOpacity: hoveredCategory === null || hoveredCategory === 'homeworkTime' ? 1 : 0.3
+              }),
+              React.createElement(Bar, { 
+                key: 'prolingvo', 
+                dataKey: "prolingvoTime", 
+                stackId: "time", 
+                fill: "#e91e63",
+                fillOpacity: hoveredCategory === null || hoveredCategory === 'prolingvoTime' ? 1 : 0.3
+              }),
+              React.createElement(Bar, { 
+                key: 'other', 
+                dataKey: "otherTime", 
+                stackId: "time", 
+                fill: "#B0B5BF",
+                fillOpacity: hoveredCategory === null || hoveredCategory === 'otherTime' ? 1 : 0.3
+              })
             ])
           )
         )

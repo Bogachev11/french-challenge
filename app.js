@@ -601,17 +601,7 @@ const FrenchChallengeDashboard = () => {
 
     // График уроков
     React.createElement('div', { className: "px-4 mb-4" },
-      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "How lessons add up"),
-      React.createElement('div', { className: "text-sm text-gray-500 mb-1 flex items-center gap-3" },
-        React.createElement('div', { className: "flex items-center gap-1" },
-          React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#3b82f6', borderRadius: '50%' } }),
-          React.createElement('span', null, "Cumulative")
-        ),
-        React.createElement('div', { className: "flex items-center gap-1" },
-          React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#1F4380', borderRadius: '50%' } }),
-          React.createElement('span', null, "Daily")
-        )
-      ),
+      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "How Lessons Grow Daily and Over Time"),
       React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px', height: 'calc(9rem * 0.85 / 1.5 + 10px)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
@@ -725,7 +715,7 @@ const FrenchChallengeDashboard = () => {
             }),
             React.createElement(Bar, { 
               dataKey: "dailyLessons", 
-              fill: "#1F4380", 
+              fill: "#3b82f6", 
               fillOpacity: 0.8,
               stroke: "transparent",
               strokeWidth: 0

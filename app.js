@@ -601,7 +601,7 @@ const FrenchChallengeDashboard = () => {
 
     // График уроков
     React.createElement('div', { className: "px-4 mb-4" },
-      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "How Lessons Grow Daily and Over Time"),
+      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "How lessons grow daily and over time"),
       React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px', height: 'calc(9rem * 0.85 / 1.5 + 10px)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },

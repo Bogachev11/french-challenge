@@ -395,7 +395,7 @@ const FrenchChallengeDashboard = () => {
     }
   }
   
-  // Данные для графика времени (все 90 дней)
+  // Данные для графика времени (все дни до текущего)
   const timeData = [];
   const useNewCategories = displayCurrentDay >= 15;
   for (let day = 1; day <= displayCurrentDay; day++) {
@@ -425,6 +425,34 @@ const FrenchChallengeDashboard = () => {
   // Debug: timeData for day 15
   const td15 = timeData.find(d => d.day === 15);
   if (td15) console.log('timeData[15]:', td15);
+
+  // Добавляем скользящее среднее по общему времени (2 дня назад, текущий, 2 дня вперед)
+  const timeChartData = timeData.map((d, index) => {
+    let sum = 0;
+    let count = 0;
+
+    for (let i = index - 2; i <= index + 2; i++) {
+      if (i >= 0 && i < timeData.length) {
+        const src = timeData[i];
+        const totalMinutes =
+          (src.legacyTime || 0) +
+          (src.readingTime || src.theoryTime || 0) +
+          (src.writingTime || src.homeworkTime || 0) +
+          (src.speakingTime || src.prolingvoTime || 0) +
+          (src.listeningTime || 0) +
+          (src.grammarTime || src.otherTime || 0);
+        sum += totalMinutes;
+        count++;
+      }
+    }
+
+    const movingAvgTime = count > 0 ? sum / count : null;
+
+    return {
+      ...d,
+      movingAvgTime
+    };
+  });
   
   // Данные для графика настроения с экспоненциальным сглаживанием
   const moodData = [];
@@ -573,14 +601,14 @@ const FrenchChallengeDashboard = () => {
 
     // График уроков
     React.createElement('div', { className: "px-4 mb-4" },
-      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Lessons Progress"),
+      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "How lessons add up"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1 flex items-center gap-3" },
         React.createElement('div', { className: "flex items-center gap-1" },
           React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#3b82f6', borderRadius: '50%' } }),
           React.createElement('span', null, "Cumulative")
         ),
         React.createElement('div', { className: "flex items-center gap-1" },
-          React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#9ca3af', borderRadius: '50%' } }),
+          React.createElement('div', { style: { width: '8px', height: '8px', backgroundColor: '#1F4380', borderRadius: '50%' } }),
           React.createElement('span', null, "Daily")
         )
       ),
@@ -697,7 +725,7 @@ const FrenchChallengeDashboard = () => {
             }),
             React.createElement(Bar, { 
               dataKey: "dailyLessons", 
-              fill: "#9ca3af", 
+              fill: "#1F4380", 
               fillOpacity: 0.8,
               stroke: "transparent",
               strokeWidth: 0
@@ -718,7 +746,7 @@ const FrenchChallengeDashboard = () => {
 
     // График времени по дням
     React.createElement('div', { className: "px-4 mb-0" },
-      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Daily Time"),
+      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "What I practise each day"),
       React.createElement('div', { className: "text-sm text-gray-500 mb-1 flex items-center gap-3" },
         ...(displayCurrentDay >= 15 ? [
           React.createElement('div', { 
@@ -825,7 +853,7 @@ const FrenchChallengeDashboard = () => {
       ),
       React.createElement('div', { className: "h-36", style: { marginTop: '10px', height: 'calc(9rem * 0.85)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
-          React.createElement(BarChart, { data: timeData, barCategoryGap: 0, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
+          React.createElement(ComposedChart, { data: timeChartData, barCategoryGap: 0, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 
               type: "number",
               dataKey: "day", 
@@ -856,9 +884,9 @@ const FrenchChallengeDashboard = () => {
               tick: (props) => React.createElement(CustomXAxisTick, { ...props, currentDay: displayCurrentDay })
             }),
             React.createElement(YAxis, { 
-              domain: [0, Math.ceil(Math.max(...timeData.map(d => (d.legacyTime || 0) + (d.readingTime || d.theoryTime || 0) + (d.writingTime || d.homeworkTime || 0) + (d.speakingTime || d.prolingvoTime || 0) + (d.listeningTime || 0) + (d.grammarTime || d.otherTime || 0))) / 30) * 30],
+              domain: [0, Math.ceil(Math.max(...timeChartData.map(d => (d.legacyTime || 0) + (d.readingTime || d.theoryTime || 0) + (d.writingTime || d.homeworkTime || 0) + (d.speakingTime || d.prolingvoTime || 0) + (d.listeningTime || 0) + (d.grammarTime || d.otherTime || 0))) / 30) * 30],
               ticks: (() => {
-                const max = Math.ceil(Math.max(...timeData.map(d => (d.legacyTime || 0) + (d.readingTime || d.theoryTime || 0) + (d.writingTime || d.homeworkTime || 0) + (d.speakingTime || d.prolingvoTime || 0) + (d.listeningTime || 0) + (d.grammarTime || d.otherTime || 0))) / 30) * 30;
+                const max = Math.ceil(Math.max(...timeChartData.map(d => (d.legacyTime || 0) + (d.readingTime || d.theoryTime || 0) + (d.writingTime || d.homeworkTime || 0) + (d.speakingTime || d.prolingvoTime || 0) + (d.listeningTime || 0) + (d.grammarTime || d.otherTime || 0))) / 30) * 30;
                 const ticks = [];
                 for (let i = 0; i <= max; i += 30) {
                   ticks.push(i);
@@ -949,7 +977,30 @@ const FrenchChallengeDashboard = () => {
                 fill: "#B0B5BF",
                 fillOpacity: hoveredCategory === null || hoveredCategory === 'otherTime' ? 1 : 0.3
               })
-            ])
+            ]),
+            // Скользящее среднее по суммарному времени (темно-серая линия с белой обводкой)
+            React.createElement(Line, {
+              key: 'timeMovingAvgOutline',
+              type: "monotone",
+              dataKey: "movingAvgTime",
+              stroke: "#ffffff",
+              strokeWidth: 5,
+              strokeOpacity: hoveredCategory === null ? 0.5 : 0.2,
+              dot: false,
+              connectNulls: false,
+              isAnimationActive: false
+            }),
+            React.createElement(Line, {
+              key: 'timeMovingAvg',
+              type: "monotone",
+              dataKey: "movingAvgTime",
+              stroke: "#002F7F",
+              strokeWidth: 3,
+              strokeOpacity: hoveredCategory === null ? 0.9 : 0.2,
+              dot: false,
+              connectNulls: false,
+              isAnimationActive: false
+            })
           )
         )
       )
@@ -957,8 +1008,8 @@ const FrenchChallengeDashboard = () => {
 
     // График настроения
     React.createElement('div', { className: "px-4 mb-0" },
-      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "Emotional State, moving average"),
-      React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – Total disaster, 5 – absolutely brilliant"),
+      React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "How I feel about my french"),
+      React.createElement('div', { className: "text-sm text-gray-500 mb-1" }, "1 – total disaster, 5 – absolutely brilliant"),
       React.createElement('div', { className: "h-28 relative", style: { marginTop: '10px', height: 'calc(7rem - 20px)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(LineChart, { data: moodData, margin: { left: 5, right: 10, top: 9, bottom: 5 }, key: chartKey },

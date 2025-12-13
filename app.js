@@ -59,21 +59,21 @@ const LessonDots = (props) => {
 };
 
 // Кастомный компонент для надписи "forecast" под последней точкой
+// Закомментировано для будущего использования
 const ForecastDot = (props) => {
-  const { cx, cy, payload, displayCurrentDay, completedLessons } = props;
-  
-  // Показываем надпись только для последней точки cumulative progress
-  if (payload && payload.day === displayCurrentDay) {
-    return React.createElement('text', {
-      x: cx - 2,
-      y: cy + 15, // под точкой на 15px ниже
-      textAnchor: 'start',
-      fill: '#93c5fd',
-      fontSize: '12px',
-      style: { pointerEvents: 'none' }
-    }, 'forecast');
-  }
-  
+  // Не показываем надпись, но возвращаем null чтобы не сломать отображение линии
+  // Раскомментировать для показа надписи "forecast":
+  // const { cx, cy, payload, displayCurrentDay, completedLessons } = props;
+  // if (payload && payload.day === displayCurrentDay) {
+  //   return React.createElement('text', {
+  //     x: cx - 2,
+  //     y: cy + 15,
+  //     textAnchor: 'start',
+  //     fill: '#93c5fd',
+  //     fontSize: '12px',
+  //     style: { pointerEvents: 'none' }
+  //   }, 'forecast');
+  // }
   return null;
 };
 
@@ -81,17 +81,23 @@ const ForecastDot = (props) => {
 const CustomXAxisTick = (props) => {
   const { x, y, payload, currentDay, hideLabels, forecastEndDay } = props;
   const isCurrentDay = payload.value === currentDay;
-  const isForecastEndDay = payload.value === forecastEndDay;
+  // Закомментировано для будущего использования прогноза:
+  // const isForecastEndDay = payload.value === forecastEndDay;
   
-  // Показываем лейбл только для текущего дня и дня прогноза
-  if (hideLabels && !isCurrentDay && !isForecastEndDay) {
+  // Показываем лейбл только для текущего дня
+  // Раскомментировать для показа дня прогноза:
+  // if (hideLabels && !isCurrentDay && !isForecastEndDay) {
+  if (hideLabels && !isCurrentDay) {
     return React.createElement('g', { transform: `translate(${x},${y})` });
   }
   
-  // Скрываем подписи для 1, 10, 30, 60, 90 если текущий день рядом (но не для дня прогноза)
+  // Скрываем подписи для 1, 10, 30, 60, 90 если текущий день рядом
+  // Раскомментировать для учета дня прогноза:
+  // const shouldHideSpecialDay = specialDays.includes(payload.value) && 
+  //   Math.abs(payload.value - currentDay) <= 2 && !isForecastEndDay;
   const specialDays = [1, 10, 30, 60, 90];
   const shouldHideSpecialDay = specialDays.includes(payload.value) && 
-    Math.abs(payload.value - currentDay) <= 2 && !isForecastEndDay;
+    Math.abs(payload.value - currentDay) <= 2;
   
   if (shouldHideSpecialDay) {
     return React.createElement('g', { transform: `translate(${x},${y})` });
@@ -103,7 +109,9 @@ const CustomXAxisTick = (props) => {
       y: 0,
       dy: 10,
       textAnchor: "middle",
-      fill: isCurrentDay ? '#000000' : (isForecastEndDay ? '#93c5fd' : '#666666'),
+      // Раскомментировать для цвета дня прогноза:
+      // fill: isCurrentDay ? '#000000' : (isForecastEndDay ? '#93c5fd' : '#666666'),
+      fill: isCurrentDay ? '#000000' : '#666666',
       fontWeight: isCurrentDay ? 'bold' : 'normal',
       fontSize: 12
     }, payload.value)
@@ -378,22 +386,24 @@ const FrenchChallengeDashboard = () => {
   }
 
   // Расчет прогнозной линии до 40 уроков
+  // Закомментировано для будущего использования
   const forecastData = [];
-  if (currentLessonsPerDay > 0) {
-    // Рассчитываем прогноз от текущего дня до достижения 40 уроков
-    const remainingLessons = Math.max(0, 40 - completedLessons);
-    const daysToComplete = Math.ceil(remainingLessons / currentLessonsPerDay);
-    const forecastEndDay = Math.min(90, displayCurrentDay + daysToComplete);
-    
-    // Создаем прогнозные данные
-    for (let day = displayCurrentDay; day <= forecastEndDay; day++) {
-      const forecastLessons = Math.min(40, completedLessons + (day - displayCurrentDay) * currentLessonsPerDay);
-      forecastData.push({
-        day: day,
-        forecast: forecastLessons
-      });
-    }
-  }
+  // Раскомментировать для показа прогноза:
+  // if (currentLessonsPerDay > 0) {
+  //   // Рассчитываем прогноз от текущего дня до достижения 40 уроков
+  //   const remainingLessons = Math.max(0, 40 - completedLessons);
+  //   const daysToComplete = Math.ceil(remainingLessons / currentLessonsPerDay);
+  //   const forecastEndDay = Math.min(90, displayCurrentDay + daysToComplete);
+  //   
+  //   // Создаем прогнозные данные
+  //   for (let day = displayCurrentDay; day <= forecastEndDay; day++) {
+  //     const forecastLessons = Math.min(40, completedLessons + (day - displayCurrentDay) * currentLessonsPerDay);
+  //     forecastData.push({
+  //       day: day,
+  //       forecast: forecastLessons
+  //     });
+  //   }
+  // }
   
   // Данные для графика времени (все дни до текущего)
   const timeData = [];
@@ -621,16 +631,19 @@ const FrenchChallengeDashboard = () => {
                 }
                 
                 // Добавляем день прогноза если он есть и его нет в тиках
-                const forecastEndDay = forecastData.length > 0 ? forecastData[forecastData.length - 1]?.day : null;
-                if (forecastEndDay && !ticks.includes(forecastEndDay)) {
-                  ticks.push(forecastEndDay);
-                }
+                // Закомментировано для будущего использования:
+                // const forecastEndDay = forecastData.length > 0 ? forecastData[forecastData.length - 1]?.day : null;
+                // if (forecastEndDay && !ticks.includes(forecastEndDay)) {
+                //   ticks.push(forecastEndDay);
+                // }
                 
                 ticks.sort((a, b) => a - b);
                 return ticks;
               })(),
               tickLine: { stroke: '#000000', strokeWidth: 1 },
-              tick: (props) => React.createElement(CustomXAxisTick, { ...props, currentDay: displayCurrentDay, hideLabels: true, forecastEndDay: forecastData.length > 0 ? forecastData[forecastData.length - 1]?.day : null })
+              tick: (props) => React.createElement(CustomXAxisTick, { ...props, currentDay: displayCurrentDay, hideLabels: true, forecastEndDay: null })
+              // Раскомментировать для показа дня прогноза:
+              // tick: (props) => React.createElement(CustomXAxisTick, { ...props, currentDay: displayCurrentDay, hideLabels: true, forecastEndDay: forecastData.length > 0 ? forecastData[forecastData.length - 1]?.day : null })
             }),
             React.createElement(YAxis, { 
               domain: [0, 40],
@@ -647,24 +660,6 @@ const FrenchChallengeDashboard = () => {
               connectNulls: false,
               isAnimationActive: false,
               data: allData.filter(d => d.day <= displayCurrentDay)
-            }),
-            forecastData.length > 0 && React.createElement(Line, { 
-              type: "step", 
-              dataKey: "forecast", 
-              stroke: "#3b82f6", 
-              strokeWidth: 3,
-              strokeOpacity: 0.5,
-              dot: false,
-              connectNulls: false,
-              isAnimationActive: false,
-              data: forecastData
-            }),
-            forecastData.length > 0 && React.createElement(ReferenceLine, {
-              x: forecastData[forecastData.length - 1]?.day,
-              stroke: "#93c5fd",
-              strokeWidth: 1,
-              strokeOpacity: 0.5,
-              strokeDasharray: "none"
             })
           )
         )

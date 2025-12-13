@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Template</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              data_categories: {
+                negative: '#e91e63',
+                neutral: '#03a9f4',
+                positive: '#4caf50',
+                suspended: '#673ab7'
+              },
+              neutral: {
+                white: '#ffffff',
+                gray_50: '#f9fafb',
+                gray_200: '#e5e7eb',
+                gray_400: '#9ca3af',
+                gray_600: '#4b5563',
+                gray_800: '#1f2937',
+                black: '#000000'
+              }
+            },
+            fontFamily: {
+              'primary': ['Inter', 'system-ui', '-apple-system', 'sans-serif']
+            },
+            spacing: {
+              '32': '8rem',
+              '8': '2rem'
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="styles.css">
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+    <script src="recharts.js"></script>
+</head>
+<body>
+    <div id="root">
+        <div style="padding: 20px; text-align: center;">
+            <p>Loading dashboard...</p>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
+
+
+

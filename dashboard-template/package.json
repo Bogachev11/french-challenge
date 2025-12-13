@@ -1,0 +1,20 @@
+{
+  "name": "dashboard-template",
+  "version": "1.0.0",
+  "description": "Dashboard template with Recharts and React",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 3000",
+    "dev": "python -m http.server 3000"
+  },
+  "keywords": [
+    "dashboard",
+    "react",
+    "recharts"
+  ],
+  "author": "",
+  "license": "MIT"
+}
+
+
+

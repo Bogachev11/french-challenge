@@ -77,6 +77,27 @@ const ForecastDot = (props) => {
   return null;
 };
 
+// Кастомный компонент для звездочки над линией при достижении цели
+const StarDot = (props) => {
+  const { cx, cy, payload, displayCurrentDay } = props;
+  
+  // Показываем звездочку только когда достигнуто 40 уроков и только на последней точке графика
+  if (!payload || payload.lessons < 40 || payload.day !== displayCurrentDay) return null;
+  
+  // Регулировка высоты звездочки (можно менять это значение)
+  const starOffsetY = 4; // 0 = на точке, отрицательное = выше, положительное = ниже
+  
+  return React.createElement('text', {
+    x: cx,
+    y: cy + starOffsetY, // прямо на точке, можно регулировать через starOffsetY
+    textAnchor: 'middle',
+    fill: '#fbbf24', // золотой цвет для звездочки
+    fontSize: '16px',
+    fontWeight: 'bold',
+    style: { pointerEvents: 'none' }
+  }, '⭐');
+};
+
 // Кастомный компонент для выделения текущего дня на оси X
 const CustomXAxisTick = (props) => {
   const { x, y, payload, currentDay, hideLabels, forecastEndDay } = props;
@@ -612,7 +633,7 @@ const FrenchChallengeDashboard = () => {
     // График уроков
     React.createElement('div', { className: "px-4 mb-4" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "How lessons grow daily and over time"),
-      React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px', height: 'calc(9rem * 0.85 / 1.5 + 10px)' } },
+      React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px', height: 'calc(9rem * 0.85 / 1.5 + 15px)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 
@@ -656,7 +677,11 @@ const FrenchChallengeDashboard = () => {
               dataKey: "lessons", 
               stroke: "#3b82f6", 
               strokeWidth: 3,
-              dot: (props) => React.createElement(ForecastDot, { ...props, displayCurrentDay: displayCurrentDay, completedLessons: completedLessons }),
+              dot: (props) => {
+                const star = React.createElement(StarDot, { ...props, displayCurrentDay: displayCurrentDay });
+                const forecast = React.createElement(ForecastDot, { ...props, displayCurrentDay: displayCurrentDay, completedLessons: completedLessons });
+                return React.createElement('g', null, star, forecast);
+              },
               connectNulls: false,
               isAnimationActive: false,
               data: allData.filter(d => d.day <= displayCurrentDay)

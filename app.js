@@ -115,10 +115,10 @@ const CustomXAxisTick = (props) => {
   // Скрываем подписи для 1, 10, 30, 60, 90 если текущий день рядом
   // Раскомментировать для учета дня прогноза:
   // const shouldHideSpecialDay = specialDays.includes(payload.value) && 
-  //   Math.abs(payload.value - currentDay) <= 2 && !isForecastEndDay;
+  //   Math.abs(payload.value - currentDay) <= 3 && !isForecastEndDay;
   const specialDays = [1, 10, 30, 60, 90];
   const shouldHideSpecialDay = specialDays.includes(payload.value) && 
-    Math.abs(payload.value - currentDay) <= 2;
+    Math.abs(payload.value - currentDay) <= 3;
   
   if (shouldHideSpecialDay) {
     return React.createElement('g', { transform: `translate(${x},${y})` });
@@ -633,7 +633,7 @@ const FrenchChallengeDashboard = () => {
     // График уроков
     React.createElement('div', { className: "px-4 mb-4" },
       React.createElement('h3', { className: "text-base font-medium text-gray-700" }, "How lessons grow daily and over time"),
-      React.createElement('div', { className: "h-36 relative", style: { marginTop: '10px', height: 'calc(9rem * 0.85 / 1.5 + 15px)' } },
+      React.createElement('div', { className: "h-36 relative", style: { marginTop: '15px', height: 'calc(9rem * 0.85 / 1.5 + 15px)' } },
         React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
           React.createElement(ComposedChart, { data: allData, margin: { left: 5, right: 10, top: 9, bottom: 0 }, key: chartKey },
             React.createElement(XAxis, { 
@@ -712,7 +712,7 @@ const FrenchChallengeDashboard = () => {
               })(),
               tickFormatter: (value) => {
                 const baseTicks = [1, 10, 30, 60, 90];
-                if (baseTicks.includes(value) && Math.abs(value - displayCurrentDay) < 2 && value !== displayCurrentDay) {
+                if (baseTicks.includes(value) && Math.abs(value - displayCurrentDay) < 3 && value !== displayCurrentDay) {
                   return '';
                 }
                 return value;
@@ -885,7 +885,7 @@ const FrenchChallengeDashboard = () => {
               tickFormatter: (value) => {
                 // Скрываем цифры базовых меток, которые слишком близко к текущему дню
                 const baseTicks = [1, 10, 30, 60, 90];
-                if (baseTicks.includes(value) && Math.abs(value - displayCurrentDay) < 2 && value !== displayCurrentDay) {
+                if (baseTicks.includes(value) && Math.abs(value - displayCurrentDay) < 3 && value !== displayCurrentDay) {
                   return ''; // Скрываем цифру только если это НЕ текущий день
                 }
                 return value; // Показываем цифру
@@ -1051,7 +1051,7 @@ const FrenchChallengeDashboard = () => {
               tickFormatter: (value) => {
                 // Скрываем цифры базовых меток, которые слишком близко к текущему дню
                 const baseTicks = [1, 10, 30, 60, 90];
-                if (baseTicks.includes(value) && Math.abs(value - displayCurrentDay) < 2 && value !== displayCurrentDay) {
+                if (baseTicks.includes(value) && Math.abs(value - displayCurrentDay) < 3 && value !== displayCurrentDay) {
                   return ''; // Скрываем цифру только если это НЕ текущий день
                 }
                 return value; // Показываем цифру

@@ -112,12 +112,14 @@ const CustomXAxisTick = (props) => {
     return React.createElement('g', { transform: `translate(${x},${y})` });
   }
   
-  // Скрываем подписи для 1, 10, 30, 60, 90 если текущий день рядом
+  // Скрываем подписи для 1, 10, 30, 60 если текущий день рядом
+  // День 90 всегда показывается (но не жирным, если не текущий)
   // Раскомментировать для учета дня прогноза:
   // const shouldHideSpecialDay = specialDays.includes(payload.value) && 
   //   Math.abs(payload.value - currentDay) <= 3 && !isForecastEndDay;
   const specialDays = [1, 10, 30, 60, 90];
   const shouldHideSpecialDay = specialDays.includes(payload.value) && 
+    payload.value !== 90 && // День 90 всегда показывается
     Math.abs(payload.value - currentDay) <= 3;
   
   if (shouldHideSpecialDay) {
@@ -234,6 +236,18 @@ const FrenchChallengeDashboard = () => {
         const data = await response.json();
         console.log('API data:', data);
         
+        // Логируем сырые данные для отладки
+        console.log('Raw data rows count:', data.values.length);
+        const day86Raw = data.values.find((row, idx) => {
+          const day = parseInt(row[1]) || (idx + 1);
+          return day === 86;
+        });
+        if (day86Raw) {
+          console.log('✅ Day 86 found in raw data:', day86Raw);
+        } else {
+          console.log('❌ Day 86 NOT found in raw data');
+        }
+        
         const formattedData = data.values
           .filter(row => row.length >= 2 && row[1])
           .map((row, index) => ({
@@ -270,6 +284,16 @@ const FrenchChallengeDashboard = () => {
         
         console.log('Formatted data:', formattedData);
         console.log('✅ Data loaded successfully - time managed by GitHub Actions');
+        
+        // Проверка наличия дня 86
+        const day86 = formattedData.find(d => d.day === 86);
+        if (day86) {
+          console.log('✅ Day 86 found:', day86);
+        } else {
+          console.log('❌ Day 86 NOT found in formattedData');
+          console.log('Last day in data:', formattedData[formattedData.length - 1]?.day);
+          console.log('Total days:', formattedData.length);
+        }
         
       } catch (apiError) {
         console.error('API failed:', apiError);
@@ -575,12 +599,22 @@ const FrenchChallengeDashboard = () => {
     React.createElement('div', { className: "bg-data-categories-neutral text-black px-4 pt-4 pb-0 relative mb-0" },
       React.createElement('h1', { className: "text-3xl font-bold text-black" }, "French A2→B1"),
         React.createElement('p', { className: "text-black text-base opacity-70" }, 
-          "90 days • 40 lessons • ", 
+          "days • 40 lessons • ", 
           React.createElement('span', { style: { fontWeight: 'bold' } }, `Day ${displayCurrentDay}`)
         ),
         React.createElement('div', { className: "absolute top-5 right-4 flex items-center gap-1" },
-          React.createElement('div', { className: "w-2 h-2 bg-blue-500 rounded-full animate-pulse" }),
-        React.createElement('span', { className: "text-sm text-black opacity-70" }, `upd ${getUpdateTimeText(lastUpdateTime)}`)
+          // Закомментирована мигающая точка:
+          // React.createElement('div', { className: "w-2 h-2 bg-blue-500 rounded-full animate-pulse" }),
+        // Закомментировано отображение времени обновления:
+        // React.createElement('span', { className: "text-sm text-black opacity-70" }, `upd ${getUpdateTimeText(lastUpdateTime)}`)
+        React.createElement('span', { 
+          className: "text-sm text-blue-500", 
+          style: { 
+            border: '1px solid #3b82f6', 
+            borderRadius: '4px', 
+            padding: '2px 8px'
+          } 
+        }, "finished")
       )
     ),
 
